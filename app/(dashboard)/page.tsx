@@ -96,18 +96,18 @@ export default async function DashboardPage() {
                 return (
                   <li
                     key={row.id ?? row.number ?? ""}
-                    className="flex items-center justify-between gap-3 px-5 py-3 text-sm"
+                    className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 px-5 py-3 text-sm"
                   >
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
                         <span className="font-mono text-muted-foreground">№{row.number}</span>
-                        <span className="font-medium text-foreground">{row.client_name}</span>
+                        <span className="truncate font-medium text-foreground">{row.client_name}</span>
                       </div>
-                      <div className="text-xs text-muted-foreground">
+                      <div className="truncate text-xs text-muted-foreground">
                         {row.route_name ?? "Без маршруту"} · {row.driver_full_name ?? "Без водія"}
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex shrink-0 items-center gap-3">
                       <span className="font-medium">{formatUah(row.price_uah)}</span>
                       {status && (
                         <StatusBadge
@@ -142,13 +142,13 @@ export default async function DashboardPage() {
               {debtors.map((c) => (
                 <li
                   key={c.id ?? c.code ?? ""}
-                  className="flex items-center justify-between px-5 py-3 text-sm"
+                  className="flex items-center justify-between gap-3 px-5 py-3 text-sm"
                 >
-                  <div>
-                    <div className="font-medium">{c.name}</div>
-                    <div className="text-xs text-muted-foreground">{c.code}</div>
+                  <div className="min-w-0">
+                    <div className="truncate font-medium">{c.name}</div>
+                    <div className="truncate text-xs text-muted-foreground">{c.code}</div>
                   </div>
-                  <span className="font-semibold text-warning">{formatUah(c.debt_uah)}</span>
+                  <span className="shrink-0 font-semibold text-warning">{formatUah(c.debt_uah)}</span>
                 </li>
               ))}
             </ul>

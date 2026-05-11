@@ -168,7 +168,7 @@ export function ClientFormDialog({
                   <FormItem>
                     <FormLabel>Телефон</FormLabel>
                     <FormControl>
-                      <Input placeholder="+380..." {...field} value={field.value ?? ""} />
+                      <Input type="tel" inputMode="tel" placeholder="+380..." {...field} value={field.value ?? ""} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -201,7 +201,7 @@ export function ClientFormDialog({
                   <FormItem>
                     <FormLabel>ЄДРПОУ</FormLabel>
                     <FormControl>
-                      <Input placeholder="12345678" {...field} value={field.value ?? ""} />
+                      <Input inputMode="numeric" placeholder="12345678" {...field} value={field.value ?? ""} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -219,6 +219,7 @@ export function ClientFormDialog({
                       <Input
                         type="number"
                         step="0.01"
+                        inputMode="decimal"
                         name={field.name}
                         ref={field.ref}
                         onBlur={field.onBlur}

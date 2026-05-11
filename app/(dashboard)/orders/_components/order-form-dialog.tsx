@@ -158,7 +158,7 @@ export function OrderFormDialog({
               onSubmit={form.handleSubmit(onSubmit)}
               className="space-y-4"
             >
-              <ScrollArea className="max-h-[70vh] pr-3">
+              <ScrollArea className="max-h-[calc(100dvh-12rem)] pr-3 sm:max-h-[70vh]">
                 <div className="space-y-4">
                   <div className="grid gap-3 sm:grid-cols-[140px_1fr_180px]">
                     <FormField
@@ -425,6 +425,7 @@ type NumberFormFieldProps = {
 };
 
 function NumberFormField({ name, label, step, form }: NumberFormFieldProps) {
+  const isInteger = step === "1";
   return (
     <FormField
       control={form.control}
@@ -436,6 +437,7 @@ function NumberFormField({ name, label, step, form }: NumberFormFieldProps) {
             <Input
               type="number"
               step={step}
+              inputMode={isInteger ? "numeric" : "decimal"}
               name={field.name}
               ref={field.ref}
               onBlur={field.onBlur}

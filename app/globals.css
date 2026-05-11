@@ -197,7 +197,7 @@
   }
 
   .crm-content {
-    @apply flex-1 px-4 py-4 sm:px-6 lg:px-8;
+    @apply min-w-0 flex-1 px-4 py-4 sm:px-6 lg:px-8;
   }
 
   .crm-content-frame {
@@ -221,11 +221,11 @@
   }
 
   .data-table td {
-    @apply whitespace-nowrap px-3 py-2.5 align-middle;
+    @apply px-3 py-2.5 align-middle md:whitespace-nowrap;
   }
 
   .page-hero {
-    @apply flex flex-col gap-4 rounded-2xl border border-border/70 bg-panel p-5 text-panel-foreground sm:p-6 lg:flex-row lg:items-end lg:justify-between;
+    @apply flex flex-col gap-4 rounded-2xl border border-border/70 bg-panel p-4 text-panel-foreground sm:p-6 lg:flex-row lg:items-end lg:justify-between;
     box-shadow: var(--shadow-soft);
   }
 
@@ -279,7 +279,7 @@
   }
 
   .metric-card {
-    @apply rounded-2xl border border-border/70 bg-panel p-4 text-panel-foreground backdrop-blur-md transition-transform duration-200 ease-out motion-safe:hover:-translate-y-0.5;
+    @apply rounded-2xl border border-border/70 bg-panel p-3 text-panel-foreground backdrop-blur-md transition-transform duration-200 ease-out motion-safe:hover:-translate-y-0.5 sm:p-4;
     box-shadow: var(--shadow-soft);
   }
 

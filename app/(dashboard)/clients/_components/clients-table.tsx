@@ -32,15 +32,15 @@ export function ClientsTable({ rows }: ClientsTableProps) {
       <table className="data-table">
         <thead>
           <tr>
-            <th>Код</th>
+            <th className="hidden md:table-cell">Код</th>
             <th>Назва</th>
-            <th>Контактна особа</th>
-            <th>Телефон</th>
-            <th>Email</th>
-            <th>ЄДРПОУ</th>
-            <th className="text-right">Замовлень</th>
-            <th className="text-right">Оборот</th>
-            <th className="text-right">Заборгованість</th>
+            <th className="hidden md:table-cell">Контактна особа</th>
+            <th className="hidden md:table-cell">Телефон</th>
+            <th className="hidden md:table-cell">Email</th>
+            <th className="hidden md:table-cell">ЄДРПОУ</th>
+            <th className="hidden text-right md:table-cell">Замовлень</th>
+            <th className="hidden text-right md:table-cell">Оборот</th>
+            <th className="hidden text-right md:table-cell">Заборгованість</th>
             <th>Статус</th>
             <th className="text-right">Дії</th>
           </tr>
@@ -51,17 +51,28 @@ export function ClientsTable({ rows }: ClientsTableProps) {
             const hasDebt = !!row.debt_uah && row.debt_uah > 0;
             return (
               <tr key={row.id ?? row.code ?? ""}>
-                <td className="font-mono text-muted-foreground">{row.code}</td>
-                <td className="font-medium text-foreground">{row.name}</td>
-                <td>{row.contact_person ?? "—"}</td>
-                <td className="text-muted-foreground">{row.phone ?? "—"}</td>
-                <td className="text-muted-foreground" title={row.email ?? undefined}>
+                <td className="hidden font-mono text-muted-foreground md:table-cell">{row.code}</td>
+                <td className="font-medium text-foreground">
+                  <div>{row.name}</div>
+                  <div className="mt-1 space-y-0.5 text-xs text-muted-foreground md:hidden">
+                    <div className="font-mono">{row.code}</div>
+                    {row.phone && <div>{row.phone}</div>}
+                    {hasDebt && (
+                      <div className="font-medium text-warning">
+                        Борг: {formatUah(row.debt_uah)}
+                      </div>
+                    )}
+                  </div>
+                </td>
+                <td className="hidden md:table-cell">{row.contact_person ?? "—"}</td>
+                <td className="hidden text-muted-foreground md:table-cell">{row.phone ?? "—"}</td>
+                <td className="hidden text-muted-foreground md:table-cell" title={row.email ?? undefined}>
                   {row.email ?? "—"}
                 </td>
-                <td className="font-mono text-muted-foreground">{row.edrpou ?? "—"}</td>
-                <td className="text-right tabular-nums">{formatNumber(row.orders_count)}</td>
-                <td className="text-right tabular-nums">{formatUah(row.turnover_uah)}</td>
-                <td className={`text-right tabular-nums ${hasDebt ? "text-warning font-medium" : ""}`}>
+                <td className="hidden font-mono text-muted-foreground md:table-cell">{row.edrpou ?? "—"}</td>
+                <td className="hidden text-right tabular-nums md:table-cell">{formatNumber(row.orders_count)}</td>
+                <td className="hidden text-right tabular-nums md:table-cell">{formatUah(row.turnover_uah)}</td>
+                <td className={`hidden text-right tabular-nums md:table-cell ${hasDebt ? "text-warning font-medium" : ""}`}>
                   {formatUah(row.debt_uah)}
                 </td>
                 <td>

@@ -17,11 +17,11 @@ export function AppHeader() {
 
   return (
     <header className="crm-header">
-      <div className="flex items-center gap-3">
-        <SidebarTrigger className="size-9 rounded-md border border-border/70" />
-        <div>
-          <div className="text-xs text-muted-foreground">CRM · Вантажні перевезення</div>
-          <div className="text-sm font-semibold text-foreground sm:text-base">
+      <div className="flex min-w-0 items-center gap-3">
+        <SidebarTrigger className="size-9 shrink-0 rounded-md border border-border/70" />
+        <div className="min-w-0">
+          <div className="truncate text-xs text-muted-foreground">CRM · Вантажні перевезення</div>
+          <div className="truncate text-sm font-semibold text-foreground sm:text-base">
             {currentItem.title}
           </div>
         </div>

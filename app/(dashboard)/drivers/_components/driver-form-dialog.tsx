@@ -139,7 +139,7 @@ export function DriverFormDialog({
                   <FormItem>
                     <FormLabel>Телефон</FormLabel>
                     <FormControl>
-                      <Input placeholder="+380..." {...field} value={field.value ?? ""} />
+                      <Input type="tel" inputMode="tel" placeholder="+380..." {...field} value={field.value ?? ""} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -211,6 +211,7 @@ export function DriverFormDialog({
                         step="0.1"
                         min="0"
                         max="5"
+                        inputMode="decimal"
                         placeholder="4.5"
                         name={field.name}
                         ref={field.ref}

@@ -23,7 +23,7 @@ export function ModulePage({
         <div className="max-w-3xl space-y-3">
           <Badge variant="secondary">{eyebrow}</Badge>
           <div className="space-y-2">
-            <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl lg:text-4xl">
               {title}
             </h1>
             <p className="text-sm text-muted-foreground sm:text-base">

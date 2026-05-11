@@ -164,6 +164,7 @@ export function RouteFormDialog({ mode, route }: RouteFormDialogProps) {
                       <Input
                         type="number"
                         step="0.1"
+                        inputMode="decimal"
                         placeholder="540"
                         name={field.name}
                         ref={field.ref}
@@ -186,6 +187,7 @@ export function RouteFormDialog({ mode, route }: RouteFormDialogProps) {
                       <Input
                         type="number"
                         step="0.1"
+                        inputMode="decimal"
                         placeholder="8"
                         name={field.name}
                         ref={field.ref}

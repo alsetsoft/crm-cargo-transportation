@@ -33,23 +33,28 @@ export function RoutesTable({ rows }: RoutesTableProps) {
         <thead>
           <tr>
             <th>Назва</th>
-            <th>Точка А</th>
-            <th>Точка Б</th>
+            <th className="hidden md:table-cell">Точка А</th>
+            <th className="hidden md:table-cell">Точка Б</th>
             <th className="text-right">Відстань</th>
-            <th className="text-right">Час, год</th>
+            <th className="hidden text-right md:table-cell">Час, год</th>
             <th>Статус</th>
-            <th>Примітки</th>
+            <th className="hidden md:table-cell">Примітки</th>
             <th className="text-right">Дії</th>
           </tr>
         </thead>
         <tbody>
           {rows.map((row) => (
             <tr key={row.id}>
-              <td className="font-medium text-foreground">{row.name}</td>
-              <td>{row.point_a}</td>
-              <td>{row.point_b}</td>
+              <td className="font-medium text-foreground">
+                <div>{row.name}</div>
+                <div className="mt-1 text-xs text-muted-foreground md:hidden">
+                  {row.point_a} → {row.point_b}
+                </div>
+              </td>
+              <td className="hidden md:table-cell">{row.point_a}</td>
+              <td className="hidden md:table-cell">{row.point_b}</td>
               <td className="text-right tabular-nums">{formatKm(row.distance_km)}</td>
-              <td className="text-right tabular-nums">
+              <td className="hidden text-right tabular-nums md:table-cell">
                 {row.typical_duration_hours ? formatNumber(row.typical_duration_hours, 1) : "—"}
               </td>
               <td>
@@ -58,7 +63,7 @@ export function RoutesTable({ rows }: RoutesTableProps) {
                   tone={ROUTE_STATUS_TONES[row.status as RouteStatus]}
                 />
               </td>
-              <td className="max-w-[260px] truncate text-muted-foreground" title={row.notes ?? undefined}>
+              <td className="hidden max-w-[260px] truncate text-muted-foreground md:table-cell" title={row.notes ?? undefined}>
                 {row.notes ?? "—"}
               </td>
               <td className="text-right">

@@ -36,13 +36,13 @@ export function DriversTable({ rows, vehicleOptions }: DriversTableProps) {
         <thead>
           <tr>
             <th>ПІБ</th>
-            <th>Телефон</th>
-            <th>Авто</th>
-            <th>Номер</th>
-            <th className="text-right">Рейсів</th>
-            <th className="text-right">Рейтинг</th>
+            <th className="hidden md:table-cell">Телефон</th>
+            <th className="hidden md:table-cell">Авто</th>
+            <th className="hidden md:table-cell">Номер</th>
+            <th className="hidden text-right md:table-cell">Рейсів</th>
+            <th className="hidden text-right md:table-cell">Рейтинг</th>
             <th>Статус</th>
-            <th>Примітки</th>
+            <th className="hidden md:table-cell">Примітки</th>
             <th className="text-right">Дії</th>
           </tr>
         </thead>
@@ -51,18 +51,26 @@ export function DriversTable({ rows, vehicleOptions }: DriversTableProps) {
             const status = row.status as DriverStatus | null;
             return (
               <tr key={row.id ?? ""}>
-                <td className="font-medium text-foreground">{row.full_name}</td>
-                <td className="text-muted-foreground">{row.phone ?? "—"}</td>
-                <td>
+                <td className="font-medium text-foreground">
+                  <div>{row.full_name}</div>
+                  <div className="mt-1 space-y-0.5 text-xs text-muted-foreground md:hidden">
+                    {row.phone && <div>{row.phone}</div>}
+                    {row.vehicle_plate && (
+                      <div className="font-mono">{row.vehicle_plate}</div>
+                    )}
+                  </div>
+                </td>
+                <td className="hidden text-muted-foreground md:table-cell">{row.phone ?? "—"}</td>
+                <td className="hidden md:table-cell">
                   {row.vehicle_unit ?? (
                     <span className="text-muted-foreground">Не закріплено</span>
                   )}
                 </td>
-                <td className="font-mono text-muted-foreground">
+                <td className="hidden font-mono text-muted-foreground md:table-cell">
                   {row.vehicle_plate ?? "—"}
                 </td>
-                <td className="text-right tabular-nums">{formatNumber(row.orders_count)}</td>
-                <td className="text-right tabular-nums">
+                <td className="hidden text-right tabular-nums md:table-cell">{formatNumber(row.orders_count)}</td>
+                <td className="hidden text-right tabular-nums md:table-cell">
                   {row.rating != null ? formatNumber(row.rating, 1) : "—"}
                 </td>
                 <td>
@@ -73,7 +81,7 @@ export function DriversTable({ rows, vehicleOptions }: DriversTableProps) {
                     />
                   )}
                 </td>
-                <td className="max-w-[260px] truncate text-muted-foreground" title={row.notes ?? undefined}>
+                <td className="hidden max-w-[260px] truncate text-muted-foreground md:table-cell" title={row.notes ?? undefined}>
                   {row.notes ?? "—"}
                 </td>
                 <td className="text-right">

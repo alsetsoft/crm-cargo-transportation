@@ -36,13 +36,13 @@ export function VehiclesTable({ rows, driverOptions }: VehiclesTableProps) {
         <thead>
           <tr>
             <th>Авто</th>
-            <th>Держномер</th>
-            <th>Водій</th>
-            <th className="text-right">Розхід</th>
-            <th>Наступний сервіс</th>
-            <th className="text-right">Одометр</th>
+            <th className="hidden md:table-cell">Держномер</th>
+            <th className="hidden md:table-cell">Водій</th>
+            <th className="hidden text-right md:table-cell">Розхід</th>
+            <th className="hidden md:table-cell">Наступний сервіс</th>
+            <th className="hidden text-right md:table-cell">Одометр</th>
             <th>Статус</th>
-            <th>Примітки</th>
+            <th className="hidden md:table-cell">Примітки</th>
             <th className="text-right">Дії</th>
           </tr>
         </thead>
@@ -51,20 +51,26 @@ export function VehiclesTable({ rows, driverOptions }: VehiclesTableProps) {
             const status = row.status as VehicleStatus | null;
             return (
               <tr key={row.id ?? row.plate ?? ""}>
-                <td className="font-medium text-foreground">{row.unit}</td>
-                <td className="font-mono">{row.plate}</td>
-                <td>
+                <td className="font-medium text-foreground">
+                  <div>{row.unit}</div>
+                  <div className="mt-1 space-y-0.5 text-xs text-muted-foreground md:hidden">
+                    <div className="font-mono">{row.plate}</div>
+                    {row.driver_full_name && <div>{row.driver_full_name}</div>}
+                  </div>
+                </td>
+                <td className="hidden font-mono md:table-cell">{row.plate}</td>
+                <td className="hidden md:table-cell">
                   {row.driver_full_name ?? (
                     <span className="text-muted-foreground">Не закріплено</span>
                   )}
                 </td>
-                <td className="text-right tabular-nums">
+                <td className="hidden text-right tabular-nums md:table-cell">
                   {row.fuel_norm_l_100km ? formatLiters(row.fuel_norm_l_100km, true) : "—"}
                 </td>
-                <td className="text-muted-foreground">
+                <td className="hidden text-muted-foreground md:table-cell">
                   {row.service_next_date ? formatDate(row.service_next_date) : "—"}
                 </td>
-                <td className="text-right tabular-nums text-muted-foreground">
+                <td className="hidden text-right tabular-nums text-muted-foreground md:table-cell">
                   {row.service_next_odometer
                     ? `${formatNumber(row.service_next_odometer)} км`
                     : "—"}
@@ -77,7 +83,7 @@ export function VehiclesTable({ rows, driverOptions }: VehiclesTableProps) {
                     />
                   )}
                 </td>
-                <td className="max-w-[260px] truncate text-muted-foreground" title={row.notes ?? undefined}>
+                <td className="hidden max-w-[260px] truncate text-muted-foreground md:table-cell" title={row.notes ?? undefined}>
                   {row.notes ?? "—"}
                 </td>
                 <td className="text-right">

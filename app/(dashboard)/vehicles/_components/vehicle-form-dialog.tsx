@@ -213,6 +213,7 @@ export function VehicleFormDialog({
                       <Input
                         type="number"
                         step="0.1"
+                        inputMode="decimal"
                         placeholder="32"
                         name={field.name}
                         ref={field.ref}
@@ -252,6 +253,7 @@ export function VehicleFormDialog({
                       <Input
                         type="number"
                         step="1"
+                        inputMode="numeric"
                         placeholder="150000"
                         name={field.name}
                         ref={field.ref}
