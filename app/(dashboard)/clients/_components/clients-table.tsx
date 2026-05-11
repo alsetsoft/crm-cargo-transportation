@@ -28,81 +28,69 @@ export function ClientsTable({ rows }: ClientsTableProps) {
   }
 
   return (
-    <div className="stack-table">
-      <div className="stack-header grid-cols-[110px_1.6fr_1.2fr_0.7fr_0.8fr_0.8fr_0.7fr_120px]">
-        <div>Код</div>
-        <div>Назва</div>
-        <div>Контакт</div>
-        <div>Замовлень</div>
-        <div>Оборот</div>
-        <div>Борг</div>
-        <div>Статус</div>
-        <div className="text-right">Дії</div>
-      </div>
-      {rows.map((row) => {
-        const status = row.status as ClientStatus | null;
-        return (
-          <div
-            key={row.id ?? row.code ?? ""}
-            className="stack-row md:grid-cols-[110px_1.6fr_1.2fr_0.7fr_0.8fr_0.8fr_0.7fr_120px]"
-          >
-            <div className="font-mono text-xs text-muted-foreground md:text-sm">
-              <span className="stack-label">Код</span>
-              {row.code}
-            </div>
-            <div>
-              <span className="stack-label">Назва</span>
-              <div className="font-medium text-foreground">{row.name}</div>
-              {row.edrpou && (
-                <p className="text-xs text-muted-foreground">ЄДРПОУ {row.edrpou}</p>
-              )}
-            </div>
-            <div className="text-sm">
-              <span className="stack-label">Контакт</span>
-              {row.contact_person && <div>{row.contact_person}</div>}
-              {row.phone && <div className="text-muted-foreground">{row.phone}</div>}
-              {row.email && (
-                <div className="truncate text-muted-foreground" title={row.email}>
-                  {row.email}
-                </div>
-              )}
-            </div>
-            <div>
-              <span className="stack-label">Замовлень</span>
-              {formatNumber(row.orders_count)}
-            </div>
-            <div>
-              <span className="stack-label">Оборот</span>
-              {formatUah(row.turnover_uah)}
-            </div>
-            <div className={row.debt_uah && row.debt_uah > 0 ? "text-warning" : ""}>
-              <span className="stack-label">Борг</span>
-              {formatUah(row.debt_uah)}
-            </div>
-            <div>
-              <span className="stack-label">Статус</span>
-              {status && (
-                <StatusBadge
-                  label={CLIENT_STATUS_LABELS[status]}
-                  tone={CLIENT_STATUS_TONES[status]}
-                />
-              )}
-            </div>
-            <div className="flex items-center justify-end gap-1">
-              <ClientFormDialog
-                mode="edit"
-                client={row as unknown as ClientRow}
-              />
-              <ConfirmDeleteDialog
-                title="Видалити клієнта?"
-                description={`Клієнта «${row.name}» буде видалено. Якщо за ним є замовлення — видалення не виконається.`}
-                action={deleteClientAction}
-                id={row.id!}
-              />
-            </div>
-          </div>
-        );
-      })}
+    <div className="panel-card overflow-x-auto">
+      <table className="data-table">
+        <thead>
+          <tr>
+            <th>Код</th>
+            <th>Назва</th>
+            <th>Контактна особа</th>
+            <th>Телефон</th>
+            <th>Email</th>
+            <th>ЄДРПОУ</th>
+            <th className="text-right">Замовлень</th>
+            <th className="text-right">Оборот</th>
+            <th className="text-right">Заборгованість</th>
+            <th>Статус</th>
+            <th className="text-right">Дії</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => {
+            const status = row.status as ClientStatus | null;
+            const hasDebt = !!row.debt_uah && row.debt_uah > 0;
+            return (
+              <tr key={row.id ?? row.code ?? ""}>
+                <td className="font-mono text-muted-foreground">{row.code}</td>
+                <td className="font-medium text-foreground">{row.name}</td>
+                <td>{row.contact_person ?? "—"}</td>
+                <td className="text-muted-foreground">{row.phone ?? "—"}</td>
+                <td className="text-muted-foreground" title={row.email ?? undefined}>
+                  {row.email ?? "—"}
+                </td>
+                <td className="font-mono text-muted-foreground">{row.edrpou ?? "—"}</td>
+                <td className="text-right tabular-nums">{formatNumber(row.orders_count)}</td>
+                <td className="text-right tabular-nums">{formatUah(row.turnover_uah)}</td>
+                <td className={`text-right tabular-nums ${hasDebt ? "text-warning font-medium" : ""}`}>
+                  {formatUah(row.debt_uah)}
+                </td>
+                <td>
+                  {status && (
+                    <StatusBadge
+                      label={CLIENT_STATUS_LABELS[status]}
+                      tone={CLIENT_STATUS_TONES[status]}
+                    />
+                  )}
+                </td>
+                <td className="text-right">
+                  <div className="flex items-center justify-end gap-1">
+                    <ClientFormDialog
+                      mode="edit"
+                      client={row as unknown as ClientRow}
+                    />
+                    <ConfirmDeleteDialog
+                      title="Видалити клієнта?"
+                      description={`Клієнта «${row.name}» буде видалено. Якщо за ним є замовлення — видалення не виконається.`}
+                      action={deleteClientAction}
+                      id={row.id!}
+                    />
+                  </div>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
     </div>
   );
 }

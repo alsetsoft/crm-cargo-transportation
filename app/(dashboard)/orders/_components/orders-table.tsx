@@ -47,22 +47,22 @@ export function OrdersTable({
 
   return (
     <div className="panel-card overflow-x-auto">
-      <table className="w-full min-w-[1400px] border-collapse text-sm">
+      <table className="data-table">
         <thead>
-          <tr className="border-b border-border/70 bg-surface/80 text-left">
-            <Th>№</Th>
-            <Th>Замовник</Th>
-            <Th>Маршрут</Th>
-            <Th>Водій</Th>
-            <Th>Авто</Th>
-            <Th>Об&apos;єм</Th>
-            <Th>Ціна</Th>
-            <Th>Оплата</Th>
-            <Th>ДП</Th>
-            <Th>Рентаб.</Th>
-            <Th>Прибуток</Th>
-            <Th>Статус</Th>
-            <Th className="text-right">Дії</Th>
+          <tr>
+            <th>№</th>
+            <th>Замовник</th>
+            <th>Маршрут</th>
+            <th>Водій</th>
+            <th>Авто</th>
+            <th className="text-right">Об&apos;єм</th>
+            <th className="text-right">Ціна</th>
+            <th>Оплата</th>
+            <th className="text-right">ДП</th>
+            <th className="text-right">Рентаб.</th>
+            <th className="text-right">Прибуток</th>
+            <th>Статус</th>
+            <th className="text-right">Дії</th>
           </tr>
         </thead>
         <tbody>
@@ -70,18 +70,15 @@ export function OrdersTable({
             const status = row.status as OrderStatus | null;
             const paymentStatus = row.payment_status as PaymentStatus | null;
             return (
-              <tr
-                key={row.id ?? row.number ?? ""}
-                className="border-b border-border/50 last:border-b-0 hover:bg-surface/50"
-              >
-                <Td className="font-mono">{row.number}</Td>
-                <Td>
+              <tr key={row.id ?? row.number ?? ""}>
+                <td className="font-mono">{row.number}</td>
+                <td>
                   <div className="font-medium">{row.client_name}</div>
                   <div className="text-xs text-muted-foreground">{row.client_code}</div>
-                </Td>
-                <Td>{row.route_name ?? "—"}</Td>
-                <Td>{row.driver_full_name ?? "—"}</Td>
-                <Td>
+                </td>
+                <td>{row.route_name ?? "—"}</td>
+                <td>{row.driver_full_name ?? "—"}</td>
+                <td>
                   {row.vehicle_plate ? (
                     <>
                       <div className="font-mono">{row.vehicle_plate}</div>
@@ -90,33 +87,35 @@ export function OrdersTable({
                   ) : (
                     "—"
                   )}
-                </Td>
-                <Td>{row.volume_tons != null ? `${formatNumber(row.volume_tons, 1)} т` : "—"}</Td>
-                <Td>{formatUah(row.price_uah)}</Td>
-                <Td>
+                </td>
+                <td className="text-right tabular-nums">
+                  {row.volume_tons != null ? `${formatNumber(row.volume_tons, 1)} т` : "—"}
+                </td>
+                <td className="text-right tabular-nums">{formatUah(row.price_uah)}</td>
+                <td>
                   {paymentStatus && (
                     <StatusBadge
                       label={PAYMENT_STATUS_LABELS[paymentStatus]}
                       tone={PAYMENT_STATUS_TONES[paymentStatus]}
                     />
                   )}
-                </Td>
-                <Td>{formatUah(row.fuel_cost_uah)}</Td>
-                <Td>
+                </td>
+                <td className="text-right tabular-nums">{formatUah(row.fuel_cost_uah)}</td>
+                <td className="text-right tabular-nums">
                   <span className={cellTone(row.profitability_pct)}>
                     {formatPercent(row.profitability_pct)}
                   </span>
-                </Td>
-                <Td>{formatUah(row.actual_profit_uah)}</Td>
-                <Td>
+                </td>
+                <td className="text-right tabular-nums">{formatUah(row.actual_profit_uah)}</td>
+                <td>
                   {status && (
                     <StatusBadge
                       label={ORDER_STATUS_LABELS[status]}
                       tone={ORDER_STATUS_TONES[status]}
                     />
                   )}
-                </Td>
-                <Td className="text-right">
+                </td>
+                <td className="text-right">
                   <div className="flex items-center justify-end gap-1">
                     <OrderFormDialog
                       mode="edit"
@@ -133,7 +132,7 @@ export function OrdersTable({
                       id={row.id!}
                     />
                   </div>
-                </Td>
+                </td>
               </tr>
             );
           })}
@@ -148,22 +147,4 @@ function cellTone(pct: number | null | undefined) {
   if (pct >= 15) return "text-success font-medium";
   if (pct >= 5) return "text-info";
   return "text-warning";
-}
-
-function Th({ className, children }: { className?: string; children: React.ReactNode }) {
-  return (
-    <th
-      className={`whitespace-nowrap px-3 py-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground ${className ?? ""}`}
-    >
-      {children}
-    </th>
-  );
-}
-
-function Td({ className, children }: { className?: string; children: React.ReactNode }) {
-  return (
-    <td className={`whitespace-nowrap px-3 py-3 align-top ${className ?? ""}`}>
-      {children}
-    </td>
-  );
 }

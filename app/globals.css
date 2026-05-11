@@ -201,7 +201,27 @@
   }
 
   .crm-content-frame {
-    @apply mx-auto flex w-full max-w-7xl flex-col gap-4 sm:gap-6;
+    @apply mx-auto flex w-full max-w-[1600px] flex-col gap-4 sm:gap-6;
+  }
+
+  .data-table {
+    @apply w-full border-collapse text-sm;
+  }
+
+  .data-table thead tr {
+    @apply border-b border-border/70 bg-surface/80 text-left;
+  }
+
+  .data-table th {
+    @apply whitespace-nowrap px-3 py-2.5 text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground;
+  }
+
+  .data-table tbody tr {
+    @apply border-b border-border/50 last:border-b-0 hover:bg-surface/50;
+  }
+
+  .data-table td {
+    @apply whitespace-nowrap px-3 py-2.5 align-middle;
   }
 
   .page-hero {
@@ -269,23 +289,6 @@
 
   .section-title {
     @apply text-lg font-semibold tracking-tight sm:text-xl;
-  }
-
-  .stack-table {
-    @apply overflow-hidden rounded-2xl border border-border/70 bg-panel text-panel-foreground backdrop-blur-md;
-    box-shadow: var(--shadow-soft);
-  }
-
-  .stack-header {
-    @apply hidden border-b border-border/70 bg-surface/80 px-4 py-3 text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground md:grid;
-  }
-
-  .stack-row {
-    @apply grid gap-3 border-b border-border/60 px-4 py-4 last:border-b-0 md:items-center md:gap-4;
-  }
-
-  .stack-label {
-    @apply text-xs font-medium uppercase tracking-[0.08em] text-muted-foreground md:hidden;
   }
 
   .status-positive {
