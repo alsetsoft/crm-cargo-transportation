@@ -181,11 +181,11 @@
 
 @layer components {
   .crm-layout {
-    @apply min-h-screen bg-background;
+    @apply flex min-h-screen w-full flex-1 bg-background;
   }
 
   .crm-main {
-    @apply flex min-h-screen w-full;
+    @apply flex min-h-screen w-full flex-1;
   }
 
   .crm-sidebar {
