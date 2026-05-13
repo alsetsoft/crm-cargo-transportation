@@ -6,7 +6,10 @@ import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-import { createRouteAction, updateRouteAction } from "@/actions/routes";
+import {
+  createExpenseAction,
+  updateExpenseAction,
+} from "@/actions/expenses";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -34,45 +37,57 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { ROUTE_STATUS_LABELS } from "@/lib/constants";
-import type { RouteRow } from "@/lib/data/routes";
+import type { ExpenseRow } from "@/lib/data/expenses";
 import {
-  routeInputSchema,
-  type RouteFormInput,
-  type RouteInput,
-} from "@/lib/validation/route";
+  expenseInputSchema,
+  type ExpenseFormInput,
+  type ExpenseInput,
+} from "@/lib/validation/expense";
 
-type RouteFormDialogProps = {
+type OrderOption = { id: string; number: string; client_name: string };
+
+type ExpenseFormDialogProps = {
   mode: "create" | "edit";
-  route?: RouteRow;
+  expense?: ExpenseRow;
+  orderOptions: OrderOption[];
 };
 
-export function RouteFormDialog({ mode, route }: RouteFormDialogProps) {
+function todayIso(): string {
+  const d = new Date();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+export function ExpenseFormDialog({
+  mode,
+  expense,
+  orderOptions,
+}: ExpenseFormDialogProps) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
-  const form = useForm<RouteFormInput, unknown, RouteInput>({
-    resolver: zodResolver(routeInputSchema),
+  const form = useForm<ExpenseFormInput, unknown, ExpenseInput>({
+    resolver: zodResolver(expenseInputSchema),
     defaultValues: {
-      name: route?.name ?? "",
-      point_a: route?.point_a ?? "",
-      point_b: route?.point_b ?? "",
-      distance_km: route?.distance_km ?? ("" as unknown as number),
-      typical_duration_hours: route?.typical_duration_hours ?? undefined,
-      status: route?.status ?? "active",
-      notes: route?.notes ?? "",
+      name: expense?.name ?? "",
+      amount_uah: expense?.amount_uah ?? ("" as unknown as number),
+      spent_at: expense?.spent_at ?? todayIso(),
+      order_id: expense?.order_id ?? "none",
+      notes: expense?.notes ?? "",
     },
   });
 
-  const onSubmit = (values: RouteInput) => {
+  const onSubmit = (values: ExpenseInput) => {
     startTransition(async () => {
       const result =
         mode === "create"
-          ? await createRouteAction(values)
-          : await updateRouteAction(route!.id, values);
+          ? await createExpenseAction(values)
+          : await updateExpenseAction(expense!.id, values);
 
       if (result.ok) {
-        toast.success(mode === "create" ? "Маршрут створено" : "Маршрут оновлено");
+        toast.success(
+          mode === "create" ? "Витрату додано" : "Витрату оновлено",
+        );
         setOpen(false);
         form.reset();
       } else {
@@ -97,17 +112,17 @@ export function RouteFormDialog({ mode, route }: RouteFormDialogProps) {
         ) : (
           <Button>
             <Plus className="size-4" />
-            Новий маршрут
+            Нова витрата
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>
-            {mode === "create" ? "Новий маршрут" : "Редагувати маршрут"}
+            {mode === "create" ? "Нова витрата" : "Редагувати витрату"}
           </DialogTitle>
           <DialogDescription>
-            Внесіть дані маршруту: точки A та B, відстань і статус.
+            Назва, сума і дата. Опціонально — прив&apos;язка до замовлення.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -119,7 +134,10 @@ export function RouteFormDialog({ mode, route }: RouteFormDialogProps) {
                 <FormItem>
                   <FormLabel>Назва</FormLabel>
                   <FormControl>
-                    <Input placeholder="Київ → Львів" {...field} />
+                    <Input
+                      placeholder="Ремонт зчеплення, паливо…"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -128,67 +146,15 @@ export function RouteFormDialog({ mode, route }: RouteFormDialogProps) {
             <div className="grid gap-3 sm:grid-cols-2">
               <FormField
                 control={form.control}
-                name="point_a"
+                name="amount_uah"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Точка А</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Київ" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="point_b"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Точка Б</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Львів" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <FormField
-                control={form.control}
-                name="distance_km"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Відстань, км</FormLabel>
+                    <FormLabel>Сума, ₴</FormLabel>
                     <FormControl>
                       <Input
-                        type="number"
-                        step="0.1"
+                        type="text"
                         inputMode="decimal"
-                        placeholder="540"
-                        name={field.name}
-                        ref={field.ref}
-                        onBlur={field.onBlur}
-                        onChange={field.onChange}
-                        value={field.value as number | string | undefined ?? ""}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="typical_duration_hours"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Час, год</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        step="0.1"
-                        inputMode="decimal"
-                        placeholder="8"
+                        placeholder="0"
                         name={field.name}
                         ref={field.ref}
                         onBlur={field.onBlur}
@@ -200,23 +166,44 @@ export function RouteFormDialog({ mode, route }: RouteFormDialogProps) {
                   </FormItem>
                 )}
               />
+              <FormField
+                control={form.control}
+                name="spent_at"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Дата</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="date"
+                        {...field}
+                        value={field.value ?? ""}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
             <FormField
               control={form.control}
-              name="status"
+              name="order_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Статус</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <FormLabel>Замовлення (необов&apos;язково)</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value ?? "none"}
+                  >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue />
+                        <SelectValue placeholder="Без прив'язки" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {Object.entries(ROUTE_STATUS_LABELS).map(([value, label]) => (
-                        <SelectItem key={value} value={value}>
-                          {label}
+                      <SelectItem value="none">Без прив&apos;язки</SelectItem>
+                      {orderOptions.map((o) => (
+                        <SelectItem key={o.id} value={o.id}>
+                          №{o.number} · {o.client_name}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -248,7 +235,11 @@ export function RouteFormDialog({ mode, route }: RouteFormDialogProps) {
                 Скасувати
               </Button>
               <Button type="submit" disabled={isPending}>
-                {isPending ? "Збереження..." : mode === "create" ? "Створити" : "Зберегти"}
+                {isPending
+                  ? "Збереження..."
+                  : mode === "create"
+                    ? "Створити"
+                    : "Зберегти"}
               </Button>
             </DialogFooter>
           </form>

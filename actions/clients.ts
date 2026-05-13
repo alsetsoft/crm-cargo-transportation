@@ -14,8 +14,6 @@ function buildPayload(input: ClientInput) {
     contact_person: input.contact_person ?? null,
     phone: input.phone ?? null,
     email: input.email ?? null,
-    edrpou: input.edrpou ?? null,
-    debt_uah: input.debt_uah,
     status: input.status,
     notes: input.notes ?? null,
   };

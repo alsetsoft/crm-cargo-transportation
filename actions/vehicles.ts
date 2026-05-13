@@ -20,14 +20,46 @@ function buildPayload(input: VehicleInput) {
   };
 }
 
+async function replaceDocuments(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  vehicleId: string,
+  documents: VehicleInput["documents"],
+): Promise<{ error: string | null }> {
+  const del = await supabase
+    .from("vehicle_documents")
+    .delete()
+    .eq("vehicle_id", vehicleId);
+  if (del.error) return { error: del.error.message };
+
+  if (documents.length === 0) return { error: null };
+
+  const rows = documents.map((d) => ({
+    vehicle_id: vehicleId,
+    type: d.type,
+    valid_until: d.valid_until,
+    notes: d.notes ?? null,
+  }));
+  const ins = await supabase.from("vehicle_documents").insert(rows);
+  if (ins.error) return { error: ins.error.message };
+  return { error: null };
+}
+
 export async function createVehicleAction(input: VehicleInput): Promise<ActionResult> {
   const parsed = vehicleInputSchema.safeParse(input);
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Невірні дані" };
   }
   const supabase = await createClient();
-  const { error } = await supabase.from("vehicles").insert(buildPayload(parsed.data));
+  const { data, error } = await supabase
+    .from("vehicles")
+    .insert(buildPayload(parsed.data))
+    .select("id")
+    .single();
   if (error) return { ok: false, error: error.message };
+
+  const docs = await replaceDocuments(supabase, data.id, parsed.data.documents);
+  if (docs.error) return { ok: false, error: docs.error };
+
   revalidatePath("/vehicles");
   revalidatePath("/drivers");
   revalidatePath("/orders");
@@ -49,6 +81,10 @@ export async function updateVehicleAction(
     .update(buildPayload(parsed.data))
     .eq("id", id);
   if (error) return { ok: false, error: error.message };
+
+  const docs = await replaceDocuments(supabase, id, parsed.data.documents);
+  if (docs.error) return { ok: false, error: docs.error };
+
   revalidatePath("/vehicles");
   revalidatePath("/drivers");
   revalidatePath("/orders");

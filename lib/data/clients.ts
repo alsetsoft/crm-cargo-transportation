@@ -39,18 +39,6 @@ export async function getClient(id: string): Promise<ClientRow | null> {
   return data;
 }
 
-export async function getDebtorClients(limit = 5): Promise<ClientWithStats[]> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("clients_with_stats")
-    .select("*")
-    .gt("debt_uah", 0)
-    .order("debt_uah", { ascending: false })
-    .limit(limit);
-  if (error) throw error;
-  return data ?? [];
-}
-
 export async function suggestNextClientCode(): Promise<string> {
   const supabase = await createClient();
   const { count } = await supabase

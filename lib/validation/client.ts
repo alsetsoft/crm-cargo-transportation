@@ -29,11 +29,6 @@ export const clientInputSchema = z.object({
     .max(200)
     .optional()
     .or(z.literal("").transform(() => undefined)),
-  edrpou: optionalString,
-  debt_uah: z.preprocess(
-    (v) => (v === "" || v == null ? 0 : Number(v)),
-    z.number().min(0).max(1e12),
-  ),
   status: clientStatusEnum.default("active"),
   notes: optionalLongString,
 });

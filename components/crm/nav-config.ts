@@ -3,9 +3,9 @@ import {
   ClipboardList,
   LayoutDashboard,
   type LucideIcon,
-  Map,
   Truck,
   UserRound,
+  Wallet,
 } from "lucide-react";
 
 export type NavItem = {
@@ -35,12 +35,6 @@ export const navigationItems: NavItem[] = [
     description: "База замовників",
   },
   {
-    title: "Маршрути",
-    href: "/routes",
-    icon: Map,
-    description: "Довідник маршрутів",
-  },
-  {
     title: "Водії",
     href: "/drivers",
     icon: UserRound,
@@ -51,5 +45,11 @@ export const navigationItems: NavItem[] = [
     href: "/vehicles",
     icon: Truck,
     description: "Рухомий склад",
+  },
+  {
+    title: "Витрати",
+    href: "/expenses",
+    icon: Wallet,
+    description: "Реєстр витрат",
   },
 ];

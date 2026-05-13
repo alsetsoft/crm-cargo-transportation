@@ -6,7 +6,7 @@ export type DriverStatus = Enums<"driver_status">;
 export type VehicleStatus = Enums<"vehicle_status">;
 export type PaymentForm = Enums<"payment_form">;
 export type PaymentStatus = Enums<"payment_status">;
-export type RouteStatus = Enums<"route_status">;
+export type VehicleDocumentType = Enums<"vehicle_document_type">;
 
 export type BadgeTone = "success" | "warning" | "info" | "destructive" | "secondary" | "default";
 
@@ -60,16 +60,6 @@ export const VEHICLE_STATUS_TONES: Record<VehicleStatus, BadgeTone> = {
   available: "success",
 };
 
-export const ROUTE_STATUS_LABELS: Record<RouteStatus, string> = {
-  active: "Активний",
-  archived: "Архів",
-};
-
-export const ROUTE_STATUS_TONES: Record<RouteStatus, BadgeTone> = {
-  active: "success",
-  archived: "secondary",
-};
-
 export const PAYMENT_FORM_LABELS: Record<PaymentForm, string> = {
   cash: "Готівка",
   bank_transfer: "Безготівка",
@@ -86,4 +76,11 @@ export const PAYMENT_STATUS_TONES: Record<PaymentStatus, BadgeTone> = {
   unpaid: "destructive",
   partial: "warning",
   paid: "success",
+};
+
+export const VEHICLE_DOCUMENT_TYPE_LABELS: Record<VehicleDocumentType, string> = {
+  service_book: "Сервісна книжка",
+  insurance: "Страховка",
+  technical_inspection: "ТО",
+  tachograph: "ТАХО",
 };

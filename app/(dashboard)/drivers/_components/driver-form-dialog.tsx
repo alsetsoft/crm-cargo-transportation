@@ -66,6 +66,7 @@ export function DriverFormDialog({
       current_vehicle_id: driver?.current_vehicle_id ?? "none",
       status: driver?.status ?? "available",
       rating: driver?.rating ?? undefined,
+      commission_per_km_uah: driver?.commission_per_km_uah ?? 0,
       notes: driver?.notes ?? "",
     },
   });
@@ -107,7 +108,7 @@ export function DriverFormDialog({
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-xl">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>
             {mode === "create" ? "Новий водій" : "Редагувати водія"}
@@ -158,7 +159,7 @@ export function DriverFormDialog({
                       value={field.value ?? "none"}
                     >
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="w-full">
                           <SelectValue placeholder="Не закріплено" />
                         </SelectTrigger>
                       </FormControl>
@@ -183,7 +184,7 @@ export function DriverFormDialog({
                     <FormLabel>Статус</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="w-full">
                           <SelectValue />
                         </SelectTrigger>
                       </FormControl>
@@ -207,10 +208,7 @@ export function DriverFormDialog({
                     <FormLabel>Рейтинг 0–5</FormLabel>
                     <FormControl>
                       <Input
-                        type="number"
-                        step="0.1"
-                        min="0"
-                        max="5"
+                        type="text"
                         inputMode="decimal"
                         placeholder="4.5"
                         name={field.name}
@@ -225,6 +223,28 @@ export function DriverFormDialog({
                 )}
               />
             </div>
+            <FormField
+              control={form.control}
+              name="commission_per_km_uah"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Комісія, ₴/км</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="text"
+                      inputMode="decimal"
+                      placeholder="0"
+                      name={field.name}
+                      ref={field.ref}
+                      onBlur={field.onBlur}
+                      onChange={field.onChange}
+                      value={(field.value as number | string | undefined) ?? ""}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormField
               control={form.control}
               name="notes"

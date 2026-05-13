@@ -11,23 +11,50 @@ function buildPayload(input: OrderInput) {
   return {
     number: input.number,
     client_id: input.client_id,
-    route_id: input.route_id ?? null,
+    loading_place: input.loading_place ?? null,
+    unloading_place: input.unloading_place ?? null,
     driver_id: input.driver_id ?? null,
     vehicle_id: input.vehicle_id ?? null,
+    departed_at: input.departed_at ?? null,
+    arrived_at: input.arrived_at ?? null,
+    distance_km: input.distance_km,
     volume_tons: input.volume_tons ?? null,
     price_uah: input.price_uah,
-    km_salary: input.km_salary ?? null,
-    km_invoice: input.km_invoice ?? null,
+    price_per_km_override_uah: input.price_per_km_override_uah ?? null,
+    driver_commission_override_uah:
+      input.driver_commission_override_uah ?? null,
     payment_form: input.payment_form,
     payment_status: input.payment_status,
     refuels_count: input.refuels_count,
     odometer_start: input.odometer_start ?? null,
     odometer_end: input.odometer_end ?? null,
     fuel_cost_uah: input.fuel_cost_uah,
-    actual_profit_uah: input.actual_profit_uah ?? null,
     status: input.status,
     notes: input.notes ?? null,
   };
+}
+
+async function replaceExpenses(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  orderId: string,
+  expenses: OrderInput["expenses"],
+): Promise<{ error: string | null }> {
+  const del = await supabase
+    .from("expenses")
+    .delete()
+    .eq("order_id", orderId);
+  if (del.error) return { error: del.error.message };
+
+  if (expenses.length === 0) return { error: null };
+
+  const rows = expenses.map((e) => ({
+    order_id: orderId,
+    name: e.name,
+    amount_uah: e.amount_uah,
+  }));
+  const ins = await supabase.from("expenses").insert(rows);
+  if (ins.error) return { error: ins.error.message };
+  return { error: null };
 }
 
 export async function createOrderAction(input: OrderInput): Promise<ActionResult> {
@@ -36,8 +63,16 @@ export async function createOrderAction(input: OrderInput): Promise<ActionResult
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Невірні дані" };
   }
   const supabase = await createClient();
-  const { error } = await supabase.from("orders").insert(buildPayload(parsed.data));
+  const { data, error } = await supabase
+    .from("orders")
+    .insert(buildPayload(parsed.data))
+    .select("id")
+    .single();
   if (error) return { ok: false, error: error.message };
+
+  const exp = await replaceExpenses(supabase, data.id, parsed.data.expenses);
+  if (exp.error) return { ok: false, error: exp.error };
+
   revalidatePath("/orders");
   revalidatePath("/clients");
   revalidatePath("/drivers");
@@ -60,6 +95,10 @@ export async function updateOrderAction(
     .update(buildPayload(parsed.data))
     .eq("id", id);
   if (error) return { ok: false, error: error.message };
+
+  const exp = await replaceExpenses(supabase, id, parsed.data.expenses);
+  if (exp.error) return { ok: false, error: exp.error };
+
   revalidatePath("/orders");
   revalidatePath("/clients");
   revalidatePath("/drivers");

@@ -3,64 +3,66 @@
 import { revalidatePath } from "next/cache";
 
 import { createClient } from "@/lib/supabase/server";
-import { routeInputSchema, type RouteInput } from "@/lib/validation/route";
+import { expenseInputSchema, type ExpenseInput } from "@/lib/validation/expense";
 
-type ActionResult<T = unknown> =
-  | { ok: true; data?: T }
-  | { ok: false; error: string };
+type ActionResult = { ok: true } | { ok: false; error: string };
 
-function buildPayload(input: RouteInput) {
+function buildPayload(input: ExpenseInput) {
   return {
     name: input.name,
-    point_a: input.point_a,
-    point_b: input.point_b,
-    distance_km: input.distance_km,
-    typical_duration_hours: input.typical_duration_hours ?? null,
-    status: input.status,
+    amount_uah: input.amount_uah,
+    spent_at: input.spent_at,
+    order_id: input.order_id ?? null,
     notes: input.notes ?? null,
   };
 }
 
-export async function createRouteAction(
-  input: RouteInput,
+export async function createExpenseAction(
+  input: ExpenseInput,
 ): Promise<ActionResult> {
-  const parsed = routeInputSchema.safeParse(input);
-  if (!parsed.success) {
-    return { ok: false, error: parsed.error.issues[0]?.message ?? "Невірні дані" };
-  }
-  const supabase = await createClient();
-  const { error } = await supabase.from("routes").insert(buildPayload(parsed.data));
-  if (error) return { ok: false, error: error.message };
-  revalidatePath("/routes");
-  revalidatePath("/orders");
-  revalidatePath("/");
-  return { ok: true };
-}
-
-export async function updateRouteAction(
-  id: string,
-  input: RouteInput,
-): Promise<ActionResult> {
-  const parsed = routeInputSchema.safeParse(input);
+  const parsed = expenseInputSchema.safeParse(input);
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Невірні дані" };
   }
   const supabase = await createClient();
   const { error } = await supabase
-    .from("routes")
-    .update(buildPayload(parsed.data))
-    .eq("id", id);
+    .from("expenses")
+    .insert(buildPayload(parsed.data));
   if (error) return { ok: false, error: error.message };
-  revalidatePath("/routes");
+
+  revalidatePath("/expenses");
   revalidatePath("/orders");
+  revalidatePath("/");
   return { ok: true };
 }
 
-export async function deleteRouteAction(id: string): Promise<ActionResult> {
+export async function updateExpenseAction(
+  id: string,
+  input: ExpenseInput,
+): Promise<ActionResult> {
+  const parsed = expenseInputSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Невірні дані" };
+  }
   const supabase = await createClient();
-  const { error } = await supabase.from("routes").delete().eq("id", id);
+  const { error } = await supabase
+    .from("expenses")
+    .update(buildPayload(parsed.data))
+    .eq("id", id);
   if (error) return { ok: false, error: error.message };
-  revalidatePath("/routes");
+
+  revalidatePath("/expenses");
   revalidatePath("/orders");
+  revalidatePath("/");
+  return { ok: true };
+}
+
+export async function deleteExpenseAction(id: string): Promise<ActionResult> {
+  const supabase = await createClient();
+  const { error } = await supabase.from("expenses").delete().eq("id", id);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/expenses");
+  revalidatePath("/orders");
+  revalidatePath("/");
   return { ok: true };
 }

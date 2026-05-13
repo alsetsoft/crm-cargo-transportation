@@ -1,5 +1,4 @@
 import {
-  Building2,
   ClipboardList,
   Truck,
   UserRound,
@@ -16,7 +15,6 @@ import {
   ORDER_STATUS_TONES,
   type OrderStatus,
 } from "@/lib/constants";
-import { getDebtorClients } from "@/lib/data/clients";
 import { getDashboardKpi } from "@/lib/data/dashboard";
 import { listOrders } from "@/lib/data/orders";
 import { formatNumber, formatUah } from "@/lib/format";
@@ -24,10 +22,9 @@ import { formatNumber, formatUah } from "@/lib/format";
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-  const [kpi, latestOrders, debtors] = await Promise.all([
+  const [kpi, latestOrders] = await Promise.all([
     getDashboardKpi(),
     listOrders({ limit: 5 }),
-    getDebtorClients(5),
   ]);
 
   return (
@@ -72,7 +69,7 @@ export default async function DashboardPage() {
         />
       </section>
 
-      <section className="grid gap-4 xl:grid-cols-[1.4fr_0.8fr]">
+      <section>
         <div className="panel-card overflow-hidden">
           <header className="flex items-center justify-between border-b border-border/70 px-5 py-4">
             <div>
@@ -93,6 +90,12 @@ export default async function DashboardPage() {
             <ul className="divide-y divide-border/60">
               {latestOrders.map((row) => {
                 const status = row.status as OrderStatus | null;
+                const from = row.loading_place?.trim();
+                const to = row.unloading_place?.trim();
+                const routeText =
+                  from && to
+                    ? `${from} → ${to}`
+                    : (from ?? to ?? "Без маршруту");
                 return (
                   <li
                     key={row.id ?? row.number ?? ""}
@@ -104,7 +107,7 @@ export default async function DashboardPage() {
                         <span className="truncate font-medium text-foreground">{row.client_name}</span>
                       </div>
                       <div className="truncate text-xs text-muted-foreground">
-                        {row.route_name ?? "Без маршруту"} · {row.driver_full_name ?? "Без водія"}
+                        {routeText} · {row.driver_full_name ?? "Без водія"}
                       </div>
                     </div>
                     <div className="flex shrink-0 items-center gap-3">
@@ -119,38 +122,6 @@ export default async function DashboardPage() {
                   </li>
                 );
               })}
-            </ul>
-          )}
-        </div>
-
-        <div className="panel-card overflow-hidden">
-          <header className="flex items-center justify-between border-b border-border/70 px-5 py-4">
-            <div>
-              <h2 className="section-title">Заборгованість клієнтів</h2>
-              <p className="text-xs text-muted-foreground">
-                ТОП-5 за сумою боргу — кому нагадати про оплату.
-              </p>
-            </div>
-            <Building2 className="size-5 text-primary" />
-          </header>
-          {debtors.length === 0 ? (
-            <p className="p-6 text-sm text-muted-foreground">
-              Немає клієнтів з заборгованістю.
-            </p>
-          ) : (
-            <ul className="divide-y divide-border/60">
-              {debtors.map((c) => (
-                <li
-                  key={c.id ?? c.code ?? ""}
-                  className="flex items-center justify-between gap-3 px-5 py-3 text-sm"
-                >
-                  <div className="min-w-0">
-                    <div className="truncate font-medium">{c.name}</div>
-                    <div className="truncate text-xs text-muted-foreground">{c.code}</div>
-                  </div>
-                  <span className="shrink-0 font-semibold text-warning">{formatUah(c.debt_uah)}</span>
-                </li>
-              ))}
             </ul>
           )}
         </div>

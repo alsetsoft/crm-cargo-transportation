@@ -64,8 +64,6 @@ export function ClientFormDialog({
       contact_person: client?.contact_person ?? "",
       phone: client?.phone ?? "",
       email: client?.email ?? "",
-      edrpou: client?.edrpou ?? "",
-      debt_uah: client?.debt_uah ?? 0,
       status: client?.status ?? "active",
       notes: client?.notes ?? "",
     },
@@ -188,43 +186,6 @@ export function ClientFormDialog({
                         placeholder="ops@company.ua"
                         {...field}
                         value={field.value ?? ""}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="edrpou"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>ЄДРПОУ</FormLabel>
-                    <FormControl>
-                      <Input inputMode="numeric" placeholder="12345678" {...field} value={field.value ?? ""} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <FormField
-                control={form.control}
-                name="debt_uah"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Заборгованість, ₴</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        inputMode="decimal"
-                        name={field.name}
-                        ref={field.ref}
-                        onBlur={field.onBlur}
-                        onChange={field.onChange}
-                        value={(field.value as number | string | undefined) ?? ""}
                       />
                     </FormControl>
                     <FormMessage />

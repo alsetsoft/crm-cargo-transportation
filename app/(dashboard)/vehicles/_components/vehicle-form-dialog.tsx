@@ -1,9 +1,9 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Pencil, Plus } from "lucide-react";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 import { useState, useTransition } from "react";
-import { useForm } from "react-hook-form";
+import { useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 import { createVehicleAction, updateVehicleAction } from "@/actions/vehicles";
@@ -34,8 +34,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { VEHICLE_STATUS_LABELS } from "@/lib/constants";
-import type { VehicleRow } from "@/lib/data/vehicles";
+import {
+  VEHICLE_DOCUMENT_TYPE_LABELS,
+  VEHICLE_STATUS_LABELS,
+} from "@/lib/constants";
+import type { VehicleDocumentRow, VehicleRow } from "@/lib/data/vehicles";
 import {
   vehicleInputSchema,
   type VehicleFormInput,
@@ -48,12 +51,14 @@ type VehicleFormDialogProps = {
   mode: "create" | "edit";
   vehicle?: VehicleRow;
   driverOptions: DriverOption[];
+  documents?: VehicleDocumentRow[];
 };
 
 export function VehicleFormDialog({
   mode,
   vehicle,
   driverOptions,
+  documents = [],
 }: VehicleFormDialogProps) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -68,8 +73,18 @@ export function VehicleFormDialog({
       status: vehicle?.status ?? "available",
       service_next_date: vehicle?.service_next_date ?? "",
       service_next_odometer: vehicle?.service_next_odometer ?? undefined,
+      documents: documents.map((d) => ({
+        type: d.type,
+        valid_until: d.valid_until,
+        notes: d.notes ?? "",
+      })),
       notes: vehicle?.notes ?? "",
     },
+  });
+
+  const documentsField = useFieldArray({
+    control: form.control,
+    name: "documents",
   });
 
   const onSubmit = (values: VehicleInput) => {
@@ -109,13 +124,13 @@ export function VehicleFormDialog({
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-xl">
+      <DialogContent className="sm:max-w-xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {mode === "create" ? "Нове авто" : "Редагувати авто"}
           </DialogTitle>
           <DialogDescription>
-            Технічна картка ТЗ з нормативом розходу та сервісною книгою.
+            Технічна картка ТЗ з нормативом розходу та документами.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -211,8 +226,7 @@ export function VehicleFormDialog({
                     <FormLabel>Розхід, л/100км</FormLabel>
                     <FormControl>
                       <Input
-                        type="number"
-                        step="0.1"
+                        type="text"
                         inputMode="decimal"
                         placeholder="32"
                         name={field.name}
@@ -251,8 +265,7 @@ export function VehicleFormDialog({
                     <FormLabel>ТО на пробігу, км</FormLabel>
                     <FormControl>
                       <Input
-                        type="number"
-                        step="1"
+                        type="text"
                         inputMode="numeric"
                         placeholder="150000"
                         name={field.name}
@@ -267,6 +280,98 @@ export function VehicleFormDialog({
                 )}
               />
             </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-medium">Документи</h3>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    documentsField.append({
+                      type: "insurance",
+                      valid_until: "",
+                      notes: "",
+                    })
+                  }
+                >
+                  <Plus className="size-4" />
+                  Додати документ
+                </Button>
+              </div>
+              {documentsField.fields.length === 0 ? (
+                <p className="text-xs text-muted-foreground">
+                  Документи не додано.
+                </p>
+              ) : (
+                <div className="space-y-2">
+                  {documentsField.fields.map((doc, index) => (
+                    <div
+                      key={doc.id}
+                      className="grid gap-2 sm:grid-cols-[1fr_140px_auto] items-end rounded-md border border-border/60 p-2"
+                    >
+                      <FormField
+                        control={form.control}
+                        name={`documents.${index}.type`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs">Тип</FormLabel>
+                            <Select
+                              onValueChange={field.onChange}
+                              value={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {Object.entries(VEHICLE_DOCUMENT_TYPE_LABELS).map(
+                                  ([value, label]) => (
+                                    <SelectItem key={value} value={value}>
+                                      {label}
+                                    </SelectItem>
+                                  ),
+                                )}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={`documents.${index}.valid_until`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs">Дійсний до</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="date"
+                                {...field}
+                                value={field.value ?? ""}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-sm"
+                        aria-label="Видалити"
+                        onClick={() => documentsField.remove(index)}
+                      >
+                        <Trash2 className="size-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <FormField
               control={form.control}
               name="notes"

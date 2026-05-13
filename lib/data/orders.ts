@@ -34,6 +34,60 @@ export async function getOrder(id: string): Promise<OrderRow | null> {
   return data;
 }
 
+export type OrderExpenseRow = Tables<"expenses">;
+
+export async function getOrderWithExpenses(
+  id: string,
+): Promise<{ order: OrderRow; expenses: OrderExpenseRow[] } | null> {
+  const supabase = await createClient();
+  const [orderRes, expRes] = await Promise.all([
+    supabase.from("orders").select("*").eq("id", id).maybeSingle(),
+    supabase
+      .from("expenses")
+      .select("*")
+      .eq("order_id", id)
+      .order("created_at"),
+  ]);
+  if (orderRes.error) throw orderRes.error;
+  if (expRes.error) throw expRes.error;
+  if (!orderRes.data) return null;
+  return { order: orderRes.data, expenses: expRes.data ?? [] };
+}
+
+export async function listOrderExpensesByOrderId(): Promise<
+  Record<string, OrderExpenseRow[]>
+> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("expenses")
+    .select("*")
+    .not("order_id", "is", null)
+    .order("created_at");
+  if (error) throw error;
+  const grouped: Record<string, OrderExpenseRow[]> = {};
+  for (const row of data ?? []) {
+    if (!row.order_id) continue;
+    if (!grouped[row.order_id]) grouped[row.order_id] = [];
+    grouped[row.order_id].push(row);
+  }
+  return grouped;
+}
+
+export async function listOrdersForClient(
+  clientId: string,
+  limit = 50,
+): Promise<OrderWithMetrics[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("orders_with_metrics")
+    .select("*")
+    .eq("client_id", clientId)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+  return data ?? [];
+}
+
 export async function getOrdersCountByStatus(): Promise<
   Record<OrderStatus, number>
 > {

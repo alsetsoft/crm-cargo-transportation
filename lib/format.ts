@@ -7,6 +7,19 @@ export function formatUah(value: number | null | undefined): string {
   }).format(value);
 }
 
+export function formatUahPrecise(
+  value: number | null | undefined,
+  maxFractionDigits = 4,
+): string {
+  if (value == null) return "—";
+  return new Intl.NumberFormat("uk-UA", {
+    style: "currency",
+    currency: "UAH",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: maxFractionDigits,
+  }).format(value);
+}
+
 export function formatNumber(value: number | null | undefined, fractionDigits = 0): string {
   if (value == null) return "—";
   return new Intl.NumberFormat("uk-UA", {

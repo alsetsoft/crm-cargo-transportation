@@ -7,6 +7,8 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
@@ -17,8 +19,6 @@ export type Database = {
           code: string
           contact_person: string | null
           created_at: string
-          debt_uah: number
-          edrpou: string | null
           email: string | null
           id: string
           name: string
@@ -31,8 +31,6 @@ export type Database = {
           code: string
           contact_person?: string | null
           created_at?: string
-          debt_uah?: number
-          edrpou?: string | null
           email?: string | null
           id?: string
           name: string
@@ -45,8 +43,6 @@ export type Database = {
           code?: string
           contact_person?: string | null
           created_at?: string
-          debt_uah?: number
-          edrpou?: string | null
           email?: string | null
           id?: string
           name?: string
@@ -59,6 +55,7 @@ export type Database = {
       }
       drivers: {
         Row: {
+          commission_per_km_uah: number
           created_at: string
           current_vehicle_id: string | null
           full_name: string
@@ -70,6 +67,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          commission_per_km_uah?: number
           created_at?: string
           current_vehicle_id?: string | null
           full_name: string
@@ -81,6 +79,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          commission_per_km_uah?: number
           created_at?: string
           current_vehicle_id?: string | null
           full_name?: string
@@ -108,75 +107,126 @@ export type Database = {
           },
         ]
       }
+      expenses: {
+        Row: {
+          amount_uah: number
+          created_at: string
+          id: string
+          name: string
+          notes: string | null
+          order_id: string | null
+          spent_at: string
+        }
+        Insert: {
+          amount_uah: number
+          created_at?: string
+          id?: string
+          name: string
+          notes?: string | null
+          order_id?: string | null
+          spent_at?: string
+        }
+        Update: {
+          amount_uah?: number
+          created_at?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          order_id?: string | null
+          spent_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expenses_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expenses_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders_with_metrics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orders: {
         Row: {
-          actual_profit_uah: number | null
+          arrived_at: string | null
           client_id: string
           created_at: string
+          departed_at: string | null
+          distance_km: number
+          driver_commission_override_uah: number | null
           driver_id: string | null
           fuel_cost_uah: number
           id: string
-          km_invoice: number | null
-          km_salary: number | null
+          loading_place: string | null
           notes: string | null
           number: string
           odometer_end: number | null
           odometer_start: number | null
           payment_form: Database["public"]["Enums"]["payment_form"]
           payment_status: Database["public"]["Enums"]["payment_status"]
+          price_per_km_override_uah: number | null
           price_uah: number
-          profitability_pct: number | null
           refuels_count: number
-          route_id: string | null
           status: Database["public"]["Enums"]["order_status"]
+          unloading_place: string | null
           updated_at: string
           vehicle_id: string | null
           volume_tons: number | null
         }
         Insert: {
-          actual_profit_uah?: number | null
+          arrived_at?: string | null
           client_id: string
           created_at?: string
+          departed_at?: string | null
+          distance_km: number
+          driver_commission_override_uah?: number | null
           driver_id?: string | null
           fuel_cost_uah?: number
           id?: string
-          km_invoice?: number | null
-          km_salary?: number | null
+          loading_place?: string | null
           notes?: string | null
           number: string
           odometer_end?: number | null
           odometer_start?: number | null
           payment_form?: Database["public"]["Enums"]["payment_form"]
           payment_status?: Database["public"]["Enums"]["payment_status"]
+          price_per_km_override_uah?: number | null
           price_uah?: number
-          profitability_pct?: number | null
           refuels_count?: number
-          route_id?: string | null
           status?: Database["public"]["Enums"]["order_status"]
+          unloading_place?: string | null
           updated_at?: string
           vehicle_id?: string | null
           volume_tons?: number | null
         }
         Update: {
-          actual_profit_uah?: number | null
+          arrived_at?: string | null
           client_id?: string
           created_at?: string
+          departed_at?: string | null
+          distance_km?: number
+          driver_commission_override_uah?: number | null
           driver_id?: string | null
           fuel_cost_uah?: number
           id?: string
-          km_invoice?: number | null
-          km_salary?: number | null
+          loading_place?: string | null
           notes?: string | null
           number?: string
           odometer_end?: number | null
           odometer_start?: number | null
           payment_form?: Database["public"]["Enums"]["payment_form"]
           payment_status?: Database["public"]["Enums"]["payment_status"]
+          price_per_km_override_uah?: number | null
           price_uah?: number
-          profitability_pct?: number | null
           refuels_count?: number
-          route_id?: string | null
           status?: Database["public"]["Enums"]["order_status"]
+          unloading_place?: string | null
           updated_at?: string
           vehicle_id?: string | null
           volume_tons?: number | null
@@ -211,13 +261,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "orders_route_id_fkey"
-            columns: ["route_id"]
-            isOneToOne: false
-            referencedRelation: "routes"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "orders_vehicle_id_fkey"
             columns: ["vehicle_id"]
             isOneToOne: false
@@ -233,44 +276,50 @@ export type Database = {
           },
         ]
       }
-      routes: {
+      vehicle_documents: {
         Row: {
           created_at: string
-          distance_km: number
           id: string
-          name: string
           notes: string | null
-          point_a: string
-          point_b: string
-          status: Database["public"]["Enums"]["route_status"]
-          typical_duration_hours: number | null
+          type: Database["public"]["Enums"]["vehicle_document_type"]
           updated_at: string
+          valid_until: string
+          vehicle_id: string
         }
         Insert: {
           created_at?: string
-          distance_km: number
           id?: string
-          name: string
           notes?: string | null
-          point_a: string
-          point_b: string
-          status?: Database["public"]["Enums"]["route_status"]
-          typical_duration_hours?: number | null
+          type: Database["public"]["Enums"]["vehicle_document_type"]
           updated_at?: string
+          valid_until: string
+          vehicle_id: string
         }
         Update: {
           created_at?: string
-          distance_km?: number
           id?: string
-          name?: string
           notes?: string | null
-          point_a?: string
-          point_b?: string
-          status?: Database["public"]["Enums"]["route_status"]
-          typical_duration_hours?: number | null
+          type?: Database["public"]["Enums"]["vehicle_document_type"]
           updated_at?: string
+          valid_until?: string
+          vehicle_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "vehicle_documents_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vehicle_documents_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehicles_with_stats"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       vehicles: {
         Row: {
@@ -336,8 +385,6 @@ export type Database = {
           code: string | null
           contact_person: string | null
           created_at: string | null
-          debt_uah: number | null
-          edrpou: string | null
           email: string | null
           id: string | null
           name: string | null
@@ -352,6 +399,7 @@ export type Database = {
       }
       drivers_with_stats: {
         Row: {
+          commission_per_km_uah: number | null
           created_at: string | null
           current_vehicle_id: string | null
           full_name: string | null
@@ -385,31 +433,36 @@ export type Database = {
       orders_with_metrics: {
         Row: {
           actual_profit_uah: number | null
+          arrived_at: string | null
           client_code: string | null
           client_id: string | null
           client_name: string | null
           created_at: string | null
-          distance_actual_km: number | null
+          departed_at: string | null
+          distance_km: number | null
+          driver_commission_override_uah: number | null
+          driver_commission_per_km_uah: number | null
+          driver_commission_uah: number | null
           driver_full_name: string | null
           driver_id: string | null
           fuel_cost_uah: number | null
-          fuel_expected_liters: number | null
           fuel_norm_l_100km: number | null
           id: string | null
-          km_invoice: number | null
-          km_salary: number | null
+          loading_place: string | null
           notes: string | null
           number: string | null
           odometer_end: number | null
           odometer_start: number | null
+          other_expenses_uah: number | null
           payment_form: Database["public"]["Enums"]["payment_form"] | null
           payment_status: Database["public"]["Enums"]["payment_status"] | null
+          price_per_km_override_uah: number | null
+          price_per_km_uah: number | null
           price_uah: number | null
           profitability_pct: number | null
           refuels_count: number | null
-          route_id: string | null
-          route_name: string | null
           status: Database["public"]["Enums"]["order_status"] | null
+          unloading_place: string | null
           updated_at: string | null
           vehicle_id: string | null
           vehicle_plate: string | null
@@ -443,13 +496,6 @@ export type Database = {
             columns: ["driver_id"]
             isOneToOne: false
             referencedRelation: "drivers_with_stats"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "orders_route_id_fkey"
-            columns: ["route_id"]
-            isOneToOne: false
-            referencedRelation: "routes"
             referencedColumns: ["id"]
           },
           {
@@ -511,7 +557,11 @@ export type Database = {
       order_status: "new" | "in_progress" | "completed" | "cancelled"
       payment_form: "cash" | "bank_transfer" | "card"
       payment_status: "unpaid" | "partial" | "paid"
-      route_status: "active" | "archived"
+      vehicle_document_type:
+        | "service_book"
+        | "insurance"
+        | "technical_inspection"
+        | "tachograph"
       vehicle_status: "on_trip" | "service" | "available"
     }
     CompositeTypes: {

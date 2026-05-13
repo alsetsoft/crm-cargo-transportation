@@ -16,13 +16,17 @@ export async function listDrivers(): Promise<DriverWithStats[]> {
   return data ?? [];
 }
 
-export async function listDriversForSelect(): Promise<
-  { id: string; full_name: string }[]
-> {
+export type DriverSelectOption = {
+  id: string;
+  full_name: string;
+  commission_per_km_uah: number;
+};
+
+export async function listDriversForSelect(): Promise<DriverSelectOption[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("drivers")
-    .select("id, full_name")
+    .select("id, full_name, commission_per_km_uah")
     .order("full_name");
   if (error) throw error;
   return data ?? [];

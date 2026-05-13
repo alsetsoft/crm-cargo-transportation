@@ -7,7 +7,7 @@ import {
   type DriverStatus,
 } from "@/lib/constants";
 import type { DriverRow, DriverWithStats } from "@/lib/data/drivers";
-import { formatNumber } from "@/lib/format";
+import { formatNumber, formatUahPrecise } from "@/lib/format";
 
 import { DriverFormDialog } from "./driver-form-dialog";
 
@@ -41,6 +41,7 @@ export function DriversTable({ rows, vehicleOptions }: DriversTableProps) {
             <th className="hidden md:table-cell">Номер</th>
             <th className="hidden text-right md:table-cell">Рейсів</th>
             <th className="hidden text-right md:table-cell">Рейтинг</th>
+            <th className="hidden text-right md:table-cell">Комісія, ₴/км</th>
             <th>Статус</th>
             <th className="hidden md:table-cell">Примітки</th>
             <th className="text-right">Дії</th>
@@ -72,6 +73,11 @@ export function DriversTable({ rows, vehicleOptions }: DriversTableProps) {
                 <td className="hidden text-right tabular-nums md:table-cell">{formatNumber(row.orders_count)}</td>
                 <td className="hidden text-right tabular-nums md:table-cell">
                   {row.rating != null ? formatNumber(row.rating, 1) : "—"}
+                </td>
+                <td className="hidden text-right tabular-nums md:table-cell">
+                  {row.commission_per_km_uah != null
+                    ? formatUahPrecise(row.commission_per_km_uah)
+                    : "—"}
                 </td>
                 <td>
                   {status && (
