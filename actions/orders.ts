@@ -77,6 +77,7 @@ export async function createOrderAction(input: OrderInput): Promise<ActionResult
   revalidatePath("/clients");
   revalidatePath("/drivers");
   revalidatePath("/vehicles");
+  revalidatePath("/expenses");
   revalidatePath("/");
   return { ok: true };
 }
@@ -103,6 +104,7 @@ export async function updateOrderAction(
   revalidatePath("/clients");
   revalidatePath("/drivers");
   revalidatePath("/vehicles");
+  revalidatePath("/expenses");
   revalidatePath("/");
   return { ok: true };
 }
@@ -113,6 +115,7 @@ export async function deleteOrderAction(id: string): Promise<ActionResult> {
   if (error) return { ok: false, error: error.message };
   revalidatePath("/orders");
   revalidatePath("/clients");
+  revalidatePath("/expenses");
   revalidatePath("/");
   return { ok: true };
 }

@@ -137,7 +137,6 @@ export function OrdersTable({
                 <td className="text-right">
                   <div className="flex items-center justify-end gap-1">
                     <OrderFormDialog
-                      mode="edit"
                       order={row as unknown as OrderRow}
                       expenses={expenses}
                       clients={clients}

@@ -1,6 +1,7 @@
 import { deleteExpenseAction } from "@/actions/expenses";
 import { ConfirmDeleteDialog } from "@/components/crm/confirm-delete-dialog";
-import type { ExpenseRow, ExpenseWithOrder } from "@/lib/data/expenses";
+import { Badge } from "@/components/ui/badge";
+import type { ExpenseListRow, ExpenseRow } from "@/lib/data/expenses";
 import { formatDate, formatUah } from "@/lib/format";
 
 import { ExpenseFormDialog } from "./expense-form-dialog";
@@ -8,8 +9,14 @@ import { ExpenseFormDialog } from "./expense-form-dialog";
 type OrderOption = { id: string; number: string; client_name: string };
 
 type ExpensesTableProps = {
-  rows: ExpenseWithOrder[];
+  rows: ExpenseListRow[];
   orderOptions: OrderOption[];
+};
+
+const SOURCE_LABELS: Record<ExpenseListRow["source"], string> = {
+  manual: "",
+  fuel: "Пальне",
+  commission: "Комісія",
 };
 
 export function ExpensesTable({ rows, orderOptions }: ExpensesTableProps) {
@@ -55,7 +62,14 @@ export function ExpensesTable({ rows, orderOptions }: ExpensesTableProps) {
                   {formatDate(row.spent_at)}
                 </td>
                 <td className="font-medium text-foreground">
-                  <div>{row.name}</div>
+                  <div className="flex items-center gap-2">
+                    <span>{row.name}</span>
+                    {row.source !== "manual" && (
+                      <Badge variant="secondary" className="font-normal">
+                        {SOURCE_LABELS[row.source]}
+                      </Badge>
+                    )}
+                  </div>
                   <div className="mt-1 space-y-0.5 text-xs text-muted-foreground md:hidden">
                     <div className="tabular-nums">{formatDate(row.spent_at)}</div>
                     {row.order_number && (
@@ -90,19 +104,28 @@ export function ExpensesTable({ rows, orderOptions }: ExpensesTableProps) {
                   {row.notes ?? "—"}
                 </td>
                 <td className="text-right">
-                  <div className="flex items-center justify-end gap-1">
-                    <ExpenseFormDialog
-                      mode="edit"
-                      expense={row as unknown as ExpenseRow}
-                      orderOptions={orderOptions}
-                    />
-                    <ConfirmDeleteDialog
-                      title="Видалити витрату?"
-                      description={`Витрату «${row.name}» буде видалено.`}
-                      action={deleteExpenseAction}
-                      id={row.id}
-                    />
-                  </div>
+                  {row.source === "manual" ? (
+                    <div className="flex items-center justify-end gap-1">
+                      <ExpenseFormDialog
+                        mode="edit"
+                        expense={row as unknown as ExpenseRow}
+                        orderOptions={orderOptions}
+                      />
+                      <ConfirmDeleteDialog
+                        title="Видалити витрату?"
+                        description={`Витрату «${row.name}» буде видалено.`}
+                        action={deleteExpenseAction}
+                        id={row.id}
+                      />
+                    </div>
+                  ) : (
+                    <span
+                      className="text-xs text-muted-foreground"
+                      title="Редагується у відповідному замовленні"
+                    >
+                      У замовленні
+                    </span>
+                  )}
                 </td>
               </tr>
             ))}

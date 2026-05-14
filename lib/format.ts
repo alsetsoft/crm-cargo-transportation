@@ -1,10 +1,11 @@
+// Format as a plain decimal and append the ₴ symbol manually: the currency
+// symbol from `style: "currency"` differs between Node's ICU (грн) and the
+// browser's (₴), which breaks hydration in SSR-ed client components.
 export function formatUah(value: number | null | undefined): string {
   if (value == null) return "—";
-  return new Intl.NumberFormat("uk-UA", {
-    style: "currency",
-    currency: "UAH",
+  return `${new Intl.NumberFormat("uk-UA", {
     maximumFractionDigits: 0,
-  }).format(value);
+  }).format(value)} ₴`;
 }
 
 export function formatUahPrecise(
@@ -12,12 +13,10 @@ export function formatUahPrecise(
   maxFractionDigits = 4,
 ): string {
   if (value == null) return "—";
-  return new Intl.NumberFormat("uk-UA", {
-    style: "currency",
-    currency: "UAH",
+  return `${new Intl.NumberFormat("uk-UA", {
     minimumFractionDigits: 0,
     maximumFractionDigits: maxFractionDigits,
-  }).format(value);
+  }).format(value)} ₴`;
 }
 
 export function formatNumber(value: number | null | undefined, fractionDigits = 0): string {
