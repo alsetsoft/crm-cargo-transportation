@@ -51,6 +51,7 @@ export default async function NewOrderPage() {
         </p>
       ) : (
         <OrderFormPage
+          mode="create"
           defaultNumber={defaultNumber}
           clients={clients}
           drivers={drivers}

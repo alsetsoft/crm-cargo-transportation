@@ -88,6 +88,21 @@ export async function listOrdersForClient(
   return data ?? [];
 }
 
+export async function listOrdersForDriver(
+  driverId: string,
+  limit = 50,
+): Promise<OrderWithMetrics[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("orders_with_metrics")
+    .select("*")
+    .eq("driver_id", driverId)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+  return data ?? [];
+}
+
 export async function getOrdersCountByStatus(): Promise<
   Record<OrderStatus, number>
 > {

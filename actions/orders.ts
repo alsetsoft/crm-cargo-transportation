@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
+import { logAudit } from "@/lib/audit";
 import { createClient } from "@/lib/supabase/server";
 import { orderInputSchema, type OrderInput } from "@/lib/validation/order";
 
@@ -73,6 +74,13 @@ export async function createOrderAction(input: OrderInput): Promise<ActionResult
   const exp = await replaceExpenses(supabase, data.id, parsed.data.expenses);
   if (exp.error) return { ok: false, error: exp.error };
 
+  await logAudit({
+    entity_type: "order",
+    entity_id: data.id,
+    entity_label: `№${parsed.data.number}`,
+    action: "created",
+  });
+
   revalidatePath("/orders");
   revalidatePath("/clients");
   revalidatePath("/drivers");
@@ -100,6 +108,13 @@ export async function updateOrderAction(
   const exp = await replaceExpenses(supabase, id, parsed.data.expenses);
   if (exp.error) return { ok: false, error: exp.error };
 
+  await logAudit({
+    entity_type: "order",
+    entity_id: id,
+    entity_label: `№${parsed.data.number}`,
+    action: "updated",
+  });
+
   revalidatePath("/orders");
   revalidatePath("/clients");
   revalidatePath("/drivers");
@@ -111,8 +126,23 @@ export async function updateOrderAction(
 
 export async function deleteOrderAction(id: string): Promise<ActionResult> {
   const supabase = await createClient();
+
+  const { data: existing } = await supabase
+    .from("orders")
+    .select("number")
+    .eq("id", id)
+    .maybeSingle();
+
   const { error } = await supabase.from("orders").delete().eq("id", id);
   if (error) return { ok: false, error: error.message };
+
+  await logAudit({
+    entity_type: "order",
+    entity_id: id,
+    entity_label: existing?.number ? `№${existing.number}` : null,
+    action: "deleted",
+  });
+
   revalidatePath("/orders");
   revalidatePath("/clients");
   revalidatePath("/expenses");

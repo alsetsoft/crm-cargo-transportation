@@ -1,32 +1,32 @@
-import { ModulePage } from "@/components/crm/module-page";
-import { listExpenses } from "@/lib/data/expenses";
-import { listOrders } from "@/lib/data/orders";
+import { Plus } from "lucide-react";
+import Link from "next/link";
 
-import { ExpenseFormDialog } from "./_components/expense-form-dialog";
+import { ModulePage } from "@/components/crm/module-page";
+import { Button } from "@/components/ui/button";
+import { listExpenses } from "@/lib/data/expenses";
+
 import { ExpensesTable } from "./_components/expenses-table";
 
 export const dynamic = "force-dynamic";
 
 export default async function ExpensesPage() {
-  const [rows, orders] = await Promise.all([
-    listExpenses(),
-    listOrders({ limit: 200 }),
-  ]);
-
-  const orderOptions = orders.map((o) => ({
-    id: o.id!,
-    number: o.number ?? "",
-    client_name: o.client_name ?? "",
-  }));
+  const rows = await listExpenses();
 
   return (
     <ModulePage
       eyebrow="Облік · Витрати"
       title="Витрати"
       description="Загальний реєстр витрат — як прив'язаних до замовлень, так і власних."
-      actions={<ExpenseFormDialog mode="create" orderOptions={orderOptions} />}
+      actions={
+        <Button asChild>
+          <Link href="/expenses/new">
+            <Plus className="size-4" />
+            Нова витрата
+          </Link>
+        </Button>
+      }
     >
-      <ExpensesTable rows={rows} orderOptions={orderOptions} />
+      <ExpensesTable rows={rows} />
     </ModulePage>
   );
 }

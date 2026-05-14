@@ -1,24 +1,23 @@
+import { History, Pencil } from "lucide-react";
+import Link from "next/link";
+
 import { deleteDriverAction } from "@/actions/drivers";
 import { ConfirmDeleteDialog } from "@/components/crm/confirm-delete-dialog";
 import { StatusBadge } from "@/components/crm/status-badge";
+import { Button } from "@/components/ui/button";
 import {
   DRIVER_STATUS_LABELS,
   DRIVER_STATUS_TONES,
   type DriverStatus,
 } from "@/lib/constants";
-import type { DriverRow, DriverWithStats } from "@/lib/data/drivers";
+import type { DriverWithStats } from "@/lib/data/drivers";
 import { formatNumber, formatUahPrecise } from "@/lib/format";
-
-import { DriverFormDialog } from "./driver-form-dialog";
-
-type VehicleOption = { id: string; unit: string; plate: string };
 
 type DriversTableProps = {
   rows: DriverWithStats[];
-  vehicleOptions: VehicleOption[];
 };
 
-export function DriversTable({ rows, vehicleOptions }: DriversTableProps) {
+export function DriversTable({ rows }: DriversTableProps) {
   if (rows.length === 0) {
     return (
       <div className="panel-card flex flex-col items-center gap-2 p-10 text-center">
@@ -53,7 +52,18 @@ export function DriversTable({ rows, vehicleOptions }: DriversTableProps) {
             return (
               <tr key={row.id ?? ""}>
                 <td className="font-medium text-foreground">
-                  <div>{row.full_name}</div>
+                  <div>
+                    {row.id ? (
+                      <Link
+                        href={`/drivers/${row.id}`}
+                        className="hover:underline"
+                      >
+                        {row.full_name}
+                      </Link>
+                    ) : (
+                      row.full_name
+                    )}
+                  </div>
                   <div className="mt-1 space-y-0.5 text-xs text-muted-foreground md:hidden">
                     {row.phone && <div>{row.phone}</div>}
                     {row.vehicle_plate && (
@@ -92,11 +102,30 @@ export function DriversTable({ rows, vehicleOptions }: DriversTableProps) {
                 </td>
                 <td className="text-right">
                   <div className="flex items-center justify-end gap-1">
-                    <DriverFormDialog
-                      mode="edit"
-                      driver={row as unknown as DriverRow}
-                      vehicleOptions={vehicleOptions}
-                    />
+                    {row.id && (
+                      <>
+                        <Button
+                          asChild
+                          variant="ghost"
+                          size="icon-sm"
+                          aria-label="Історія поїздок"
+                        >
+                          <Link href={`/drivers/${row.id}`}>
+                            <History className="size-4" />
+                          </Link>
+                        </Button>
+                        <Button
+                          asChild
+                          variant="ghost"
+                          size="icon-sm"
+                          aria-label="Редагувати"
+                        >
+                          <Link href={`/drivers/${row.id}/edit`}>
+                            <Pencil className="size-4" />
+                          </Link>
+                        </Button>
+                      </>
+                    )}
                     <ConfirmDeleteDialog
                       title="Видалити водія?"
                       description={`Водія «${row.full_name}» буде видалено. Замовлення з ним перейдуть у статус без водія.`}

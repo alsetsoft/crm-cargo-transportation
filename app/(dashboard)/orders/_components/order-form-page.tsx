@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
 
-import { createOrderAction } from "@/actions/orders";
+import { createOrderAction, updateOrderAction } from "@/actions/orders";
 import { Button } from "@/components/ui/button";
+import type { OrderExpenseRow, OrderRow } from "@/lib/data/orders";
 import type { OrderInput } from "@/lib/validation/order";
 
 import {
@@ -18,33 +19,37 @@ import {
   type VehicleOption,
 } from "./order-form-shared";
 
-type OrderFormPageProps = {
-  defaultNumber?: string;
+type OrderFormPageProps = (
+  | { mode: "create"; defaultNumber?: string }
+  | { mode: "edit"; order: OrderRow; expenses: OrderExpenseRow[] }
+) & {
   clients: ClientOption[];
   drivers: DriverOption[];
   vehicles: VehicleOption[];
 };
 
-export function OrderFormPage({
-  defaultNumber,
-  clients,
-  drivers,
-  vehicles,
-}: OrderFormPageProps) {
+export function OrderFormPage(props: OrderFormPageProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
   const { form, expensesField, preview } = useOrderForm({
-    defaultNumber,
-    drivers,
+    defaultNumber: props.mode === "create" ? props.defaultNumber : undefined,
+    order: props.mode === "edit" ? props.order : undefined,
+    expenses: props.mode === "edit" ? props.expenses : undefined,
+    drivers: props.drivers,
   });
 
   const onSubmit = (values: OrderInput) => {
     startTransition(async () => {
-      const result = await createOrderAction(values);
+      const result =
+        props.mode === "create"
+          ? await createOrderAction(values)
+          : await updateOrderAction(props.order.id, values);
 
       if (result.ok) {
-        toast.success("Замовлення створено");
+        toast.success(
+          props.mode === "create" ? "Замовлення створено" : "Замовлення оновлено",
+        );
         router.push("/orders");
       } else {
         toast.error(result.error);
@@ -62,16 +67,20 @@ export function OrderFormPage({
           form={form}
           expensesField={expensesField}
           preview={preview}
-          clients={clients}
-          drivers={drivers}
-          vehicles={vehicles}
+          clients={props.clients}
+          drivers={props.drivers}
+          vehicles={props.vehicles}
         />
         <div className="flex justify-end gap-2 border-t border-border/60 pt-4">
           <Button type="button" variant="outline" asChild disabled={isPending}>
             <Link href="/orders">Скасувати</Link>
           </Button>
           <Button type="submit" disabled={isPending}>
-            {isPending ? "Збереження..." : "Створити"}
+            {isPending
+              ? "Збереження..."
+              : props.mode === "create"
+                ? "Створити"
+                : "Зберегти"}
           </Button>
         </div>
       </form>

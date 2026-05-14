@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
+import { logAudit } from "@/lib/audit";
 import { createClient } from "@/lib/supabase/server";
 import { expenseInputSchema, type ExpenseInput } from "@/lib/validation/expense";
 
@@ -25,10 +26,19 @@ export async function createExpenseAction(
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Невірні дані" };
   }
   const supabase = await createClient();
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("expenses")
-    .insert(buildPayload(parsed.data));
+    .insert(buildPayload(parsed.data))
+    .select("id")
+    .single();
   if (error) return { ok: false, error: error.message };
+
+  await logAudit({
+    entity_type: "expense",
+    entity_id: data?.id ?? null,
+    entity_label: parsed.data.name,
+    action: "created",
+  });
 
   revalidatePath("/expenses");
   revalidatePath("/orders");
@@ -51,6 +61,13 @@ export async function updateExpenseAction(
     .eq("id", id);
   if (error) return { ok: false, error: error.message };
 
+  await logAudit({
+    entity_type: "expense",
+    entity_id: id,
+    entity_label: parsed.data.name,
+    action: "updated",
+  });
+
   revalidatePath("/expenses");
   revalidatePath("/orders");
   revalidatePath("/");
@@ -59,8 +76,23 @@ export async function updateExpenseAction(
 
 export async function deleteExpenseAction(id: string): Promise<ActionResult> {
   const supabase = await createClient();
+
+  const { data: existing } = await supabase
+    .from("expenses")
+    .select("name")
+    .eq("id", id)
+    .maybeSingle();
+
   const { error } = await supabase.from("expenses").delete().eq("id", id);
   if (error) return { ok: false, error: error.message };
+
+  await logAudit({
+    entity_type: "expense",
+    entity_id: id,
+    entity_label: existing?.name ?? null,
+    action: "deleted",
+  });
+
   revalidatePath("/expenses");
   revalidatePath("/orders");
   revalidatePath("/");

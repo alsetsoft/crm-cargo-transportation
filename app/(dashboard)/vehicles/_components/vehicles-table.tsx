@@ -1,34 +1,23 @@
+import { BookOpen, Pencil } from "lucide-react";
+import Link from "next/link";
+
 import { deleteVehicleAction } from "@/actions/vehicles";
 import { ConfirmDeleteDialog } from "@/components/crm/confirm-delete-dialog";
 import { StatusBadge } from "@/components/crm/status-badge";
+import { Button } from "@/components/ui/button";
 import {
-  VEHICLE_DOCUMENT_TYPE_LABELS,
   VEHICLE_STATUS_LABELS,
   VEHICLE_STATUS_TONES,
   type VehicleStatus,
 } from "@/lib/constants";
-import type {
-  VehicleDocumentRow,
-  VehicleRow,
-  VehicleWithStats,
-} from "@/lib/data/vehicles";
+import type { VehicleWithStats } from "@/lib/data/vehicles";
 import { formatDate, formatLiters, formatNumber } from "@/lib/format";
-
-import { VehicleFormDialog } from "./vehicle-form-dialog";
-
-type DriverOption = { id: string; full_name: string };
 
 type VehiclesTableProps = {
   rows: VehicleWithStats[];
-  driverOptions: DriverOption[];
-  documentsByVehicleId: Record<string, VehicleDocumentRow[]>;
 };
 
-export function VehiclesTable({
-  rows,
-  driverOptions,
-  documentsByVehicleId,
-}: VehiclesTableProps) {
+export function VehiclesTable({ rows }: VehiclesTableProps) {
   if (rows.length === 0) {
     return (
       <div className="panel-card flex flex-col items-center gap-2 p-10 text-center">
@@ -51,7 +40,6 @@ export function VehiclesTable({
             <th className="hidden text-right md:table-cell">Розхід</th>
             <th className="hidden md:table-cell">Наступний сервіс</th>
             <th className="hidden text-right md:table-cell">Одометр</th>
-            <th className="hidden md:table-cell">Документи</th>
             <th>Статус</th>
             <th className="hidden md:table-cell">Примітки</th>
             <th className="text-right">Дії</th>
@@ -60,7 +48,6 @@ export function VehiclesTable({
         <tbody>
           {rows.map((row) => {
             const status = row.status as VehicleStatus | null;
-            const docs = row.id ? (documentsByVehicleId[row.id] ?? []) : [];
             return (
               <tr key={row.id ?? row.plate ?? ""}>
                 <td className="font-medium text-foreground">
@@ -87,22 +74,6 @@ export function VehiclesTable({
                     ? `${formatNumber(row.service_next_odometer)} км`
                     : "—"}
                 </td>
-                <td className="hidden md:table-cell">
-                  {docs.length === 0 ? (
-                    <span className="text-muted-foreground">—</span>
-                  ) : (
-                    <div className="space-y-0.5 text-xs">
-                      {docs.slice(0, 3).map((d) => (
-                        <div key={d.id} className="flex gap-1">
-                          <span className="text-muted-foreground">
-                            {VEHICLE_DOCUMENT_TYPE_LABELS[d.type]}:
-                          </span>
-                          <span>{formatDate(d.valid_until)}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </td>
                 <td>
                   {status && (
                     <StatusBadge
@@ -116,12 +87,30 @@ export function VehiclesTable({
                 </td>
                 <td className="text-right">
                   <div className="flex items-center justify-end gap-1">
-                    <VehicleFormDialog
-                      mode="edit"
-                      vehicle={row as unknown as VehicleRow}
-                      driverOptions={driverOptions}
-                      documents={docs}
-                    />
+                    {row.id && (
+                      <>
+                        <Button
+                          asChild
+                          variant="ghost"
+                          size="icon-sm"
+                          aria-label="Сервісна книга"
+                        >
+                          <Link href={`/vehicles/${row.id}/service-book`}>
+                            <BookOpen className="size-4" />
+                          </Link>
+                        </Button>
+                        <Button
+                          asChild
+                          variant="ghost"
+                          size="icon-sm"
+                          aria-label="Редагувати"
+                        >
+                          <Link href={`/vehicles/${row.id}/edit`}>
+                            <Pencil className="size-4" />
+                          </Link>
+                        </Button>
+                      </>
+                    )}
                     <ConfirmDeleteDialog
                       title="Видалити авто?"
                       description={`Авто ${row.plate} буде видалено. Якщо за ним закріплені замовлення — посилання знімуться.`}

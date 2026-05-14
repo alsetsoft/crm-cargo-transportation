@@ -114,6 +114,17 @@ export async function listExpenses(limit = 200): Promise<ExpenseListRow[]> {
     .slice(0, limit);
 }
 
+export async function getExpense(id: string): Promise<ExpenseRow | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("expenses")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
 export async function getExpensesTotalThisMonth(): Promise<number> {
   const supabase = await createClient();
   const monthStart = new Date();

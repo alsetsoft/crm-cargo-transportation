@@ -1,6 +1,7 @@
 import {
   Building2,
   ClipboardList,
+  History,
   LayoutDashboard,
   type LucideIcon,
   Truck,
@@ -51,5 +52,11 @@ export const navigationItems: NavItem[] = [
     href: "/expenses",
     icon: Wallet,
     description: "Реєстр витрат",
+  },
+  {
+    title: "Логи",
+    href: "/logs",
+    icon: History,
+    description: "Журнал змін у CRM",
   },
 ];

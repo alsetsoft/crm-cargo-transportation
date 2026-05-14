@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_logs: {
+        Row: {
+          action: string
+          created_at: string
+          description: string | null
+          entity_id: string | null
+          entity_label: string | null
+          entity_type: string
+          id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          description?: string | null
+          entity_id?: string | null
+          entity_label?: string | null
+          entity_type: string
+          id?: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          description?: string | null
+          entity_id?: string | null
+          entity_label?: string | null
+          entity_type?: string
+          id?: string
+        }
+        Relationships: []
+      }
       clients: {
         Row: {
           code: string
@@ -272,6 +302,89 @@ export type Database = {
             columns: ["vehicle_id"]
             isOneToOne: false
             referencedRelation: "vehicles_with_stats"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vehicle_service_procedures: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          period_days: number | null
+          period_km: number | null
+          type: Database["public"]["Enums"]["vehicle_document_type"]
+          updated_at: string
+          vehicle_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          period_days?: number | null
+          period_km?: number | null
+          type: Database["public"]["Enums"]["vehicle_document_type"]
+          updated_at?: string
+          vehicle_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          period_days?: number | null
+          period_km?: number | null
+          type?: Database["public"]["Enums"]["vehicle_document_type"]
+          updated_at?: string
+          vehicle_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vehicle_service_procedures_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vehicle_service_procedures_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehicles_with_stats"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vehicle_service_records: {
+        Row: {
+          completed_at: string
+          created_at: string
+          id: string
+          notes: string | null
+          odometer: number | null
+          procedure_id: string
+        }
+        Insert: {
+          completed_at?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          odometer?: number | null
+          procedure_id: string
+        }
+        Update: {
+          completed_at?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          odometer?: number | null
+          procedure_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vehicle_service_records_procedure_id_fkey"
+            columns: ["procedure_id"]
+            isOneToOne: false
+            referencedRelation: "vehicle_service_procedures"
             referencedColumns: ["id"]
           },
         ]

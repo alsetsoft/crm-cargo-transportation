@@ -1,17 +1,16 @@
-import { ModulePage } from "@/components/crm/module-page";
-import { listDrivers } from "@/lib/data/drivers";
-import { listAvailableVehicles } from "@/lib/data/vehicles";
+import { Plus } from "lucide-react";
+import Link from "next/link";
 
-import { DriverFormDialog } from "./_components/driver-form-dialog";
+import { ModulePage } from "@/components/crm/module-page";
+import { Button } from "@/components/ui/button";
+import { listDrivers } from "@/lib/data/drivers";
+
 import { DriversTable } from "./_components/drivers-table";
 
 export const dynamic = "force-dynamic";
 
 export default async function DriversPage() {
-  const [rows, vehicleOptions] = await Promise.all([
-    listDrivers(),
-    listAvailableVehicles(),
-  ]);
+  const rows = await listDrivers();
 
   return (
     <ModulePage
@@ -19,10 +18,15 @@ export default async function DriversPage() {
       title="Водії"
       description="Облік водійського складу: статус, прив'язка до авто, рейтинг ефективності."
       actions={
-        <DriverFormDialog mode="create" vehicleOptions={vehicleOptions} />
+        <Button asChild>
+          <Link href="/drivers/new">
+            <Plus className="size-4" />
+            Новий водій
+          </Link>
+        </Button>
       }
     >
-      <DriversTable rows={rows} vehicleOptions={vehicleOptions} />
+      <DriversTable rows={rows} />
     </ModulePage>
   );
 }

@@ -1,7 +1,5 @@
 import { z } from "zod";
 
-import { vehicleDocumentSchema } from "./vehicle-document";
-
 const optionalString = z
   .string()
   .max(2000)
@@ -39,7 +37,6 @@ export const vehicleInputSchema = z.object({
     (v) => (v === "" || v == null ? undefined : Number(v)),
     z.number().int().min(0).max(10_000_000).optional(),
   ),
-  documents: vehicleDocumentSchema.array().default([]),
   notes: optionalString,
 });
 

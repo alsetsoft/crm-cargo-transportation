@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
+import { logAudit } from "@/lib/audit";
 import { createClient } from "@/lib/supabase/server";
 import { vehicleInputSchema, type VehicleInput } from "@/lib/validation/vehicle";
 
@@ -20,28 +21,8 @@ function buildPayload(input: VehicleInput) {
   };
 }
 
-async function replaceDocuments(
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  vehicleId: string,
-  documents: VehicleInput["documents"],
-): Promise<{ error: string | null }> {
-  const del = await supabase
-    .from("vehicle_documents")
-    .delete()
-    .eq("vehicle_id", vehicleId);
-  if (del.error) return { error: del.error.message };
-
-  if (documents.length === 0) return { error: null };
-
-  const rows = documents.map((d) => ({
-    vehicle_id: vehicleId,
-    type: d.type,
-    valid_until: d.valid_until,
-    notes: d.notes ?? null,
-  }));
-  const ins = await supabase.from("vehicle_documents").insert(rows);
-  if (ins.error) return { error: ins.error.message };
-  return { error: null };
+function vehicleLabel(plate: string, unit: string): string {
+  return `${plate} · ${unit}`;
 }
 
 export async function createVehicleAction(input: VehicleInput): Promise<ActionResult> {
@@ -57,8 +38,12 @@ export async function createVehicleAction(input: VehicleInput): Promise<ActionRe
     .single();
   if (error) return { ok: false, error: error.message };
 
-  const docs = await replaceDocuments(supabase, data.id, parsed.data.documents);
-  if (docs.error) return { ok: false, error: docs.error };
+  await logAudit({
+    entity_type: "vehicle",
+    entity_id: data?.id ?? null,
+    entity_label: vehicleLabel(parsed.data.plate, parsed.data.unit),
+    action: "created",
+  });
 
   revalidatePath("/vehicles");
   revalidatePath("/drivers");
@@ -82,8 +67,12 @@ export async function updateVehicleAction(
     .eq("id", id);
   if (error) return { ok: false, error: error.message };
 
-  const docs = await replaceDocuments(supabase, id, parsed.data.documents);
-  if (docs.error) return { ok: false, error: docs.error };
+  await logAudit({
+    entity_type: "vehicle",
+    entity_id: id,
+    entity_label: vehicleLabel(parsed.data.plate, parsed.data.unit),
+    action: "updated",
+  });
 
   revalidatePath("/vehicles");
   revalidatePath("/drivers");
@@ -93,8 +82,23 @@ export async function updateVehicleAction(
 
 export async function deleteVehicleAction(id: string): Promise<ActionResult> {
   const supabase = await createClient();
+
+  const { data: existing } = await supabase
+    .from("vehicles")
+    .select("plate, unit")
+    .eq("id", id)
+    .maybeSingle();
+
   const { error } = await supabase.from("vehicles").delete().eq("id", id);
   if (error) return { ok: false, error: error.message };
+
+  await logAudit({
+    entity_type: "vehicle",
+    entity_id: id,
+    entity_label: existing ? vehicleLabel(existing.plate, existing.unit) : null,
+    action: "deleted",
+  });
+
   revalidatePath("/vehicles");
   revalidatePath("/drivers");
   return { ok: true };

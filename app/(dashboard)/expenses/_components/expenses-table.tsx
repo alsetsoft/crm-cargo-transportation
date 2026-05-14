@@ -1,16 +1,15 @@
+import { Pencil } from "lucide-react";
+import Link from "next/link";
+
 import { deleteExpenseAction } from "@/actions/expenses";
 import { ConfirmDeleteDialog } from "@/components/crm/confirm-delete-dialog";
 import { Badge } from "@/components/ui/badge";
-import type { ExpenseListRow, ExpenseRow } from "@/lib/data/expenses";
+import { Button } from "@/components/ui/button";
+import type { ExpenseListRow } from "@/lib/data/expenses";
 import { formatDate, formatUah } from "@/lib/format";
-
-import { ExpenseFormDialog } from "./expense-form-dialog";
-
-type OrderOption = { id: string; number: string; client_name: string };
 
 type ExpensesTableProps = {
   rows: ExpenseListRow[];
-  orderOptions: OrderOption[];
 };
 
 const SOURCE_LABELS: Record<ExpenseListRow["source"], string> = {
@@ -19,7 +18,7 @@ const SOURCE_LABELS: Record<ExpenseListRow["source"], string> = {
   commission: "Комісія",
 };
 
-export function ExpensesTable({ rows, orderOptions }: ExpensesTableProps) {
+export function ExpensesTable({ rows }: ExpensesTableProps) {
   if (rows.length === 0) {
     return (
       <div className="panel-card flex flex-col items-center gap-2 p-10 text-center">
@@ -106,11 +105,16 @@ export function ExpensesTable({ rows, orderOptions }: ExpensesTableProps) {
                 <td className="text-right">
                   {row.source === "manual" ? (
                     <div className="flex items-center justify-end gap-1">
-                      <ExpenseFormDialog
-                        mode="edit"
-                        expense={row as unknown as ExpenseRow}
-                        orderOptions={orderOptions}
-                      />
+                      <Button
+                        asChild
+                        variant="ghost"
+                        size="icon-sm"
+                        aria-label="Редагувати"
+                      >
+                        <Link href={`/expenses/${row.id}/edit`}>
+                          <Pencil className="size-4" />
+                        </Link>
+                      </Button>
                       <ConfirmDeleteDialog
                         title="Видалити витрату?"
                         description={`Витрату «${row.name}» буде видалено.`}

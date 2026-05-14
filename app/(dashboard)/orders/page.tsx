@@ -4,23 +4,17 @@ import Link from "next/link";
 import { ModulePage } from "@/components/crm/module-page";
 import { Button } from "@/components/ui/button";
 import { listActiveClients } from "@/lib/data/clients";
-import { listDriversForSelect } from "@/lib/data/drivers";
-import { listOrderExpensesByOrderId, listOrders } from "@/lib/data/orders";
-import { listAvailableVehicles } from "@/lib/data/vehicles";
+import { listOrders } from "@/lib/data/orders";
 
 import { OrdersTable } from "./_components/orders-table";
 
 export const dynamic = "force-dynamic";
 
 export default async function OrdersPage() {
-  const [rows, clients, drivers, vehicles, expensesByOrderId] =
-    await Promise.all([
-      listOrders({ limit: 100 }),
-      listActiveClients(),
-      listDriversForSelect(),
-      listAvailableVehicles(),
-      listOrderExpensesByOrderId(),
-    ]);
+  const [rows, clients] = await Promise.all([
+    listOrders({ limit: 100 }),
+    listActiveClients(),
+  ]);
 
   return (
     <ModulePage
@@ -43,13 +37,7 @@ export default async function OrdersPage() {
         )
       }
     >
-      <OrdersTable
-        rows={rows}
-        clients={clients}
-        drivers={drivers}
-        vehicles={vehicles}
-        expensesByOrderId={expensesByOrderId}
-      />
+      <OrdersTable rows={rows} />
     </ModulePage>
   );
 }

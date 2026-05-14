@@ -1,6 +1,10 @@
+import { Pencil } from "lucide-react";
+import Link from "next/link";
+
 import { deleteOrderAction } from "@/actions/orders";
 import { ConfirmDeleteDialog } from "@/components/crm/confirm-delete-dialog";
 import { StatusBadge } from "@/components/crm/status-badge";
+import { Button } from "@/components/ui/button";
 import {
   ORDER_STATUS_LABELS,
   ORDER_STATUS_TONES,
@@ -9,38 +13,14 @@ import {
   type OrderStatus,
   type PaymentStatus,
 } from "@/lib/constants";
-import type {
-  OrderExpenseRow,
-  OrderRow,
-  OrderWithMetrics,
-} from "@/lib/data/orders";
+import type { OrderWithMetrics } from "@/lib/data/orders";
 import { formatNumber, formatPercent, formatUah } from "@/lib/format";
-
-import { OrderFormDialog } from "./order-form-dialog";
-
-type ClientOption = { id: string; name: string; code: string };
-type DriverOption = {
-  id: string;
-  full_name: string;
-  commission_per_km_uah: number;
-};
-type VehicleOption = { id: string; unit: string; plate: string };
 
 type OrdersTableProps = {
   rows: OrderWithMetrics[];
-  clients: ClientOption[];
-  drivers: DriverOption[];
-  vehicles: VehicleOption[];
-  expensesByOrderId?: Record<string, OrderExpenseRow[]>;
 };
 
-export function OrdersTable({
-  rows,
-  clients,
-  drivers,
-  vehicles,
-  expensesByOrderId = {},
-}: OrdersTableProps) {
+export function OrdersTable({ rows }: OrdersTableProps) {
   if (rows.length === 0) {
     return (
       <div className="panel-card flex flex-col items-center gap-2 p-10 text-center">
@@ -77,7 +57,6 @@ export function OrdersTable({
           {rows.map((row) => {
             const status = row.status as OrderStatus | null;
             const paymentStatus = row.payment_status as PaymentStatus | null;
-            const expenses = row.id ? (expensesByOrderId[row.id] ?? []) : [];
             const routeText = formatRoute(row.loading_place, row.unloading_place);
             return (
               <tr key={row.id ?? row.number ?? ""}>
@@ -136,13 +115,18 @@ export function OrdersTable({
                 </td>
                 <td className="text-right">
                   <div className="flex items-center justify-end gap-1">
-                    <OrderFormDialog
-                      order={row as unknown as OrderRow}
-                      expenses={expenses}
-                      clients={clients}
-                      drivers={drivers}
-                      vehicles={vehicles}
-                    />
+                    {row.id && (
+                      <Button
+                        asChild
+                        variant="ghost"
+                        size="icon-sm"
+                        aria-label="Редагувати"
+                      >
+                        <Link href={`/orders/${row.id}/edit`}>
+                          <Pencil className="size-4" />
+                        </Link>
+                      </Button>
+                    )}
                     <ConfirmDeleteDialog
                       title="Видалити замовлення?"
                       description={`Замовлення №${row.number} буде видалено.`}

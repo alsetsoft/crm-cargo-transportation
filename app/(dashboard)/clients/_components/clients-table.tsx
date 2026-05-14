@@ -1,4 +1,4 @@
-import { History } from "lucide-react";
+import { History, Pencil } from "lucide-react";
 import Link from "next/link";
 
 import { deleteClientAction } from "@/actions/clients";
@@ -10,10 +10,8 @@ import {
   CLIENT_STATUS_TONES,
   type ClientStatus,
 } from "@/lib/constants";
-import type { ClientRow, ClientWithStats } from "@/lib/data/clients";
+import type { ClientWithStats } from "@/lib/data/clients";
 import { formatNumber, formatUah } from "@/lib/format";
-
-import { ClientFormDialog } from "./client-form-dialog";
 
 type ClientsTableProps = {
   rows: ClientWithStats[];
@@ -98,10 +96,18 @@ export function ClientsTable({ rows }: ClientsTableProps) {
                         </Link>
                       </Button>
                     )}
-                    <ClientFormDialog
-                      mode="edit"
-                      client={row as unknown as ClientRow}
-                    />
+                    {row.id && (
+                      <Button
+                        asChild
+                        variant="ghost"
+                        size="icon-sm"
+                        aria-label="Редагувати"
+                      >
+                        <Link href={`/clients/${row.id}/edit`}>
+                          <Pencil className="size-4" />
+                        </Link>
+                      </Button>
+                    )}
                     <ConfirmDeleteDialog
                       title="Видалити клієнта?"
                       description={`Клієнта «${row.name}» буде видалено. Якщо за ним є замовлення — видалення не виконається.`}

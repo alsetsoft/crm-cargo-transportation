@@ -7,13 +7,8 @@ import {
   CLIENT_STATUS_TONES,
   type ClientStatus,
 } from "@/lib/constants";
-import { getClient, listActiveClients, listClients } from "@/lib/data/clients";
-import { listDriversForSelect } from "@/lib/data/drivers";
-import {
-  listOrderExpensesByOrderId,
-  listOrdersForClient,
-} from "@/lib/data/orders";
-import { listAvailableVehicles } from "@/lib/data/vehicles";
+import { getClient, listClients } from "@/lib/data/clients";
+import { listOrdersForClient } from "@/lib/data/orders";
 import { formatUah } from "@/lib/format";
 
 import { OrdersTable } from "../../orders/_components/orders-table";
@@ -29,22 +24,10 @@ export default async function ClientDetailPage({
 }) {
   const { id } = await params;
 
-  const [
-    client,
-    stats,
-    orders,
-    clients,
-    drivers,
-    vehicles,
-    expensesByOrderId,
-  ] = await Promise.all([
+  const [client, stats, orders] = await Promise.all([
     getClient(id),
     listClients(),
     listOrdersForClient(id, 100),
-    listActiveClients(),
-    listDriversForSelect(),
-    listAvailableVehicles(),
-    listOrderExpensesByOrderId(),
   ]);
 
   if (!client) {
@@ -102,13 +85,7 @@ export default async function ClientDetailPage({
 
       <section className="space-y-3">
         <h2 className="section-title">Історія замовлень</h2>
-        <OrdersTable
-          rows={orders}
-          clients={clients}
-          drivers={drivers}
-          vehicles={vehicles}
-          expensesByOrderId={expensesByOrderId}
-        />
+        <OrdersTable rows={orders} />
       </section>
 
       {client.notes && (
