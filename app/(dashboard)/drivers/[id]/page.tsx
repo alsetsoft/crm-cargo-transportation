@@ -1,9 +1,9 @@
-import { ArrowLeft, Pencil } from "lucide-react";
+import { Pencil } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { PageHeader } from "@/components/crm/page-header";
 import { StatusBadge } from "@/components/crm/status-badge";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   DRIVER_STATUS_LABELS,
@@ -38,39 +38,25 @@ export default async function DriverDetailPage({ params }: PageProps) {
 
   return (
     <>
-      <section className="page-hero">
-        <div className="max-w-3xl space-y-3">
-          <Badge variant="secondary">Автопарк · Водій</Badge>
-          <div className="space-y-2">
-            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl lg:text-4xl">
-              {driver.full_name}
-            </h1>
-            {driver.phone && (
-              <p className="text-sm text-muted-foreground sm:text-base">
-                {driver.phone}
-              </p>
-            )}
-          </div>
-        </div>
-        <div className="flex flex-wrap gap-2 sm:gap-3 lg:justify-end">
-          <StatusBadge
-            label={DRIVER_STATUS_LABELS[status]}
-            tone={DRIVER_STATUS_TONES[status]}
-          />
-          <Button variant="outline" asChild>
-            <Link href={`/drivers/${driver.id}/edit`}>
-              <Pencil className="size-4" />
-              Редагувати
-            </Link>
-          </Button>
-          <Button variant="outline" asChild>
-            <Link href="/drivers">
-              <ArrowLeft className="size-4" />
-              До списку
-            </Link>
-          </Button>
-        </div>
-      </section>
+      <PageHeader
+        title={driver.full_name}
+        backHref="/drivers"
+        backLabel="До списку"
+        actions={
+          <>
+            <StatusBadge
+              label={DRIVER_STATUS_LABELS[status]}
+              tone={DRIVER_STATUS_TONES[status]}
+            />
+            <Button variant="outline" size="sm" asChild>
+              <Link href={`/drivers/${driver.id}/edit`}>
+                <Pencil className="size-4" />
+                Редагувати
+              </Link>
+            </Button>
+          </>
+        }
+      />
 
       <section className="kpi-grid">
         <div className="panel-card p-5">

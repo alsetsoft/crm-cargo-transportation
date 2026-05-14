@@ -13,5 +13,23 @@ This version has breaking changes — APIs, conventions, and file structure may 
   with more than a yes/no choice, and any multi-step flows.
 - Acceptable exceptions: native browser confirms for destructive
   actions (delete, discard), toast notifications, and tooltips.
+
+## Page headers
+
+- **Top-level pages** (reachable from the sidebar nav — `/orders`,
+  `/clients`, `/drivers`, `/vehicles`, `/expenses`, `/logs`, and
+  primary detail views like `/clients/[id]`) use `ModulePage` with
+  the full hero (eyebrow badge + title + description + actions).
+- **Sub-pages** (everything else: `*/new`, `*/[id]/edit`,
+  `*/[id]/service-book`, secondary detail views) use the slim
+  `<PageHeader>` from [components/crm/page-header.tsx](components/crm/page-header.tsx)
+  — just `<h1>` + back button (and optional inline actions),
+  no eyebrow badge, no description paragraph. This keeps forms
+  above the fold and avoids unnecessary vertical scroll.
+- Title format on sub-pages:
+  - Create: `"Нове <entity>"` (e.g. `"Нове замовлення"`, `"Новий клієнт"`).
+  - Edit: `"Зміна <entity> · <identifier>"` (e.g. `"Зміна замовлення №1001"`,
+    `"Зміна клієнта · ТОВ Агроінвест"`). The identifier provides context
+    without needing a separate description line.
   
 <!-- END:nextjs-agent-rules -->
