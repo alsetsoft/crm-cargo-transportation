@@ -446,7 +446,7 @@ export function OrderFormBody({
       <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
         Операційні дані
       </h3>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <NumberFormField
           name="volume_tons"
           label="Об'єм, т"
@@ -487,7 +487,7 @@ export function OrderFormBody({
       <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
         Фінанси
       </h3>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2">
         <NumberFormField
           name="price_uah"
           label="Ціна, ₴"
@@ -683,11 +683,11 @@ export function OrderFormBody({
 
   return (
     <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
-      <div className="space-y-6">
+      <div className="min-w-0 space-y-6">
         {infoSection}
         {opsSection}
       </div>
-      <div className="space-y-6">{financeSection}</div>
+      <div className="min-w-0 space-y-6">{financeSection}</div>
     </div>
   );
 }

@@ -27,9 +27,14 @@ export function AppSidebar() {
 
   return (
     <Sidebar className="crm-sidebar" collapsible="icon">
-      <SidebarHeader className="border-b border-sidebar-border/70 px-3 py-4">
-        <Link href="/" className="flex items-center gap-3 rounded-lg px-2 py-2 text-sidebar-foreground">
-          <div className="flex size-10 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+      <SidebarHeader
+        className={`h-16 justify-center border-b border-sidebar-border/70 py-0 ${collapsed ? "px-0" : "px-3"}`}
+      >
+        <Link
+          href="/"
+          className={`flex items-center gap-3 rounded-lg text-sidebar-foreground ${collapsed ? "justify-center px-0" : "px-2"}`}
+        >
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
             <CarFront className="size-5" />
           </div>
           {!collapsed && (
