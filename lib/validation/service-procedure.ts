@@ -1,6 +1,14 @@
 import { z } from "zod";
 
-import { vehicleDocumentTypeEnum } from "./vehicle-document";
+// Mirrors the Postgres enum `vehicle_document_type` (the column type on
+// vehicle_service_procedures.type). The enum name is a historical relic
+// from a former vehicle_documents table.
+export const vehicleServiceTypeEnum = z.enum([
+  "service_book",
+  "insurance",
+  "technical_inspection",
+  "tachograph",
+]);
 
 const optionalNotes = z
   .string()
@@ -15,7 +23,7 @@ const optionalPositiveInt = z.preprocess(
 
 export const serviceProcedureInputSchema = z
   .object({
-    type: vehicleDocumentTypeEnum,
+    type: vehicleServiceTypeEnum,
     period_km: optionalPositiveInt,
     period_days: optionalPositiveInt,
     notes: optionalNotes,

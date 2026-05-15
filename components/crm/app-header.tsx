@@ -3,10 +3,15 @@
 import { usePathname } from "next/navigation";
 
 import { navigationItems } from "@/components/crm/nav-config";
-import { Badge } from "@/components/ui/badge";
+import { UserMenu } from "@/components/crm/user-menu";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import type { SessionUser } from "@/lib/auth";
 
-export function AppHeader() {
+type AppHeaderProps = {
+  user: SessionUser;
+};
+
+export function AppHeader({ user }: AppHeaderProps) {
   const pathname = usePathname();
   const currentItem =
     [...navigationItems]
@@ -26,9 +31,11 @@ export function AppHeader() {
           </div>
         </div>
       </div>
-      <Badge variant="secondary" className="hidden sm:inline-flex">
-        VlasnaCRM · Етап 1
-      </Badge>
+      <UserMenu
+        email={user.email}
+        fullName={user.full_name}
+        role={user.role}
+      />
     </header>
   );
 }

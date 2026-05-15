@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { logAudit } from "@/lib/audit";
+import { requireAdmin } from "@/lib/auth";
 import { VEHICLE_DOCUMENT_TYPE_LABELS } from "@/lib/constants";
 import { getVehicleCurrentOdometer } from "@/lib/data/service-procedures";
 import { createClient } from "@/lib/supabase/server";
@@ -44,6 +45,7 @@ export async function createServiceProcedureAction(
   vehicleId: string,
   input: ServiceProcedureInput,
 ): Promise<ActionResult> {
+  await requireAdmin();
   const parsed = serviceProcedureInputSchema.safeParse(input);
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Невірні дані" };
@@ -77,6 +79,7 @@ export async function createServiceProcedureAction(
 export async function deleteServiceProcedureAction(
   id: string,
 ): Promise<ActionResult> {
+  await requireAdmin();
   const supabase = await createClient();
   const { data: proc, error: fetchError } = await supabase
     .from("vehicle_service_procedures")
@@ -107,6 +110,7 @@ export async function deleteServiceProcedureAction(
 export async function markServiceProcedureDoneAction(
   procedureId: string,
 ): Promise<ActionResult> {
+  await requireAdmin();
   const supabase = await createClient();
   const { data: proc, error: fetchError } = await supabase
     .from("vehicle_service_procedures")
@@ -140,6 +144,7 @@ export async function markServiceProcedureDoneAction(
 export async function undoServiceProcedureAction(
   procedureId: string,
 ): Promise<ActionResult> {
+  await requireAdmin();
   const supabase = await createClient();
 
   const { data: proc, error: fetchError } = await supabase

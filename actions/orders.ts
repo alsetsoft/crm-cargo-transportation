@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { logAudit } from "@/lib/audit";
+import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { orderInputSchema, type OrderInput } from "@/lib/validation/order";
 
@@ -59,6 +60,7 @@ async function replaceExpenses(
 }
 
 export async function createOrderAction(input: OrderInput): Promise<ActionResult> {
+  await requireAdmin();
   const parsed = orderInputSchema.safeParse(input);
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Невірні дані" };
@@ -94,6 +96,7 @@ export async function updateOrderAction(
   id: string,
   input: OrderInput,
 ): Promise<ActionResult> {
+  await requireAdmin();
   const parsed = orderInputSchema.safeParse(input);
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Невірні дані" };
@@ -125,6 +128,7 @@ export async function updateOrderAction(
 }
 
 export async function deleteOrderAction(id: string): Promise<ActionResult> {
+  await requireAdmin();
   const supabase = await createClient();
 
   const { data: existing } = await supabase

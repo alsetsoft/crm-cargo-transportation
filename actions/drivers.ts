@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { logAudit } from "@/lib/audit";
+import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { driverInputSchema, type DriverInput } from "@/lib/validation/driver";
 
@@ -21,6 +22,7 @@ function buildPayload(input: DriverInput) {
 }
 
 export async function createDriverAction(input: DriverInput): Promise<ActionResult> {
+  await requireAdmin();
   const parsed = driverInputSchema.safeParse(input);
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Невірні дані" };
@@ -51,6 +53,7 @@ export async function updateDriverAction(
   id: string,
   input: DriverInput,
 ): Promise<ActionResult> {
+  await requireAdmin();
   const parsed = driverInputSchema.safeParse(input);
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Невірні дані" };
@@ -76,6 +79,7 @@ export async function updateDriverAction(
 }
 
 export async function deleteDriverAction(id: string): Promise<ActionResult> {
+  await requireAdmin();
   const supabase = await createClient();
 
   const { data: existing } = await supabase

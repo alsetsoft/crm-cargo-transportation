@@ -4,8 +4,15 @@ import { AppHeader } from "@/components/crm/app-header";
 import { AppSidebar } from "@/components/crm/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { requireAdmin } from "@/lib/auth";
 
-export default function DashboardLayout({ children }: { children: ReactNode }) {
+export default async function DashboardLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  const user = await requireAdmin();
+
   return (
     <TooltipProvider delayDuration={200}>
       <SidebarProvider>
@@ -13,7 +20,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           <div className="crm-main">
             <AppSidebar />
             <SidebarInset>
-              <AppHeader />
+              <AppHeader user={user} />
               <div className="crm-content">
                 <div className="crm-content-frame">{children}</div>
               </div>

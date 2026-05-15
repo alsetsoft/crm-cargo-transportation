@@ -306,6 +306,33 @@ export type Database = {
           },
         ]
       }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string
+          full_name: string | null
+          role: Database["public"]["Enums"]["user_role"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          full_name?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          full_name?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       vehicle_service_procedures: {
         Row: {
           created_at: string
@@ -385,51 +412,6 @@ export type Database = {
             columns: ["procedure_id"]
             isOneToOne: false
             referencedRelation: "vehicle_service_procedures"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      vehicle_documents: {
-        Row: {
-          created_at: string
-          id: string
-          notes: string | null
-          type: Database["public"]["Enums"]["vehicle_document_type"]
-          updated_at: string
-          valid_until: string
-          vehicle_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          notes?: string | null
-          type: Database["public"]["Enums"]["vehicle_document_type"]
-          updated_at?: string
-          valid_until: string
-          vehicle_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          notes?: string | null
-          type?: Database["public"]["Enums"]["vehicle_document_type"]
-          updated_at?: string
-          valid_until?: string
-          vehicle_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "vehicle_documents_vehicle_id_fkey"
-            columns: ["vehicle_id"]
-            isOneToOne: false
-            referencedRelation: "vehicles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "vehicle_documents_vehicle_id_fkey"
-            columns: ["vehicle_id"]
-            isOneToOne: false
-            referencedRelation: "vehicles_with_stats"
             referencedColumns: ["id"]
           },
         ]
@@ -661,6 +643,7 @@ export type Database = {
       }
     }
     Functions: {
+      is_admin: { Args: never; Returns: boolean }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
     }
@@ -670,6 +653,7 @@ export type Database = {
       order_status: "new" | "in_progress" | "completed" | "cancelled"
       payment_form: "cash" | "bank_transfer" | "card"
       payment_status: "unpaid" | "partial" | "paid"
+      user_role: "admin"
       vehicle_document_type:
         | "service_book"
         | "insurance"
@@ -785,3 +769,40 @@ export type Enums<
 
 export type Views<T extends keyof Database["public"]["Views"]> =
   Database["public"]["Views"][T]["Row"]
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  public: {
+    Enums: {
+      client_status: ["active", "inactive", "awaiting_payment"],
+      driver_status: ["on_trip", "available", "unavailable"],
+      order_status: ["new", "in_progress", "completed", "cancelled"],
+      payment_form: ["cash", "bank_transfer", "card"],
+      payment_status: ["unpaid", "partial", "paid"],
+      user_role: ["admin"],
+      vehicle_document_type: [
+        "service_book",
+        "insurance",
+        "technical_inspection",
+        "tachograph",
+      ],
+      vehicle_status: ["on_trip", "service", "available"],
+    },
+  },
+} as const

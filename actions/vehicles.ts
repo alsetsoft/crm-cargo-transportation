@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { logAudit } from "@/lib/audit";
+import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { vehicleInputSchema, type VehicleInput } from "@/lib/validation/vehicle";
 
@@ -26,6 +27,7 @@ function vehicleLabel(plate: string, unit: string): string {
 }
 
 export async function createVehicleAction(input: VehicleInput): Promise<ActionResult> {
+  await requireAdmin();
   const parsed = vehicleInputSchema.safeParse(input);
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Невірні дані" };
@@ -56,6 +58,7 @@ export async function updateVehicleAction(
   id: string,
   input: VehicleInput,
 ): Promise<ActionResult> {
+  await requireAdmin();
   const parsed = vehicleInputSchema.safeParse(input);
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Невірні дані" };
@@ -81,6 +84,7 @@ export async function updateVehicleAction(
 }
 
 export async function deleteVehicleAction(id: string): Promise<ActionResult> {
+  await requireAdmin();
   const supabase = await createClient();
 
   const { data: existing } = await supabase

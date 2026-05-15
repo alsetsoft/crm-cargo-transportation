@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { logAudit } from "@/lib/audit";
+import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { clientInputSchema, type ClientInput } from "@/lib/validation/client";
 
@@ -25,6 +26,7 @@ function clientLabel(code: string, name: string): string {
 }
 
 export async function createClientAction(input: ClientInput): Promise<ActionResult> {
+  await requireAdmin();
   const parsed = clientInputSchema.safeParse(input);
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Невірні дані" };
@@ -54,6 +56,7 @@ export async function updateClientAction(
   id: string,
   input: ClientInput,
 ): Promise<ActionResult> {
+  await requireAdmin();
   const parsed = clientInputSchema.safeParse(input);
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Невірні дані" };
@@ -78,6 +81,7 @@ export async function updateClientAction(
 }
 
 export async function deleteClientAction(id: string): Promise<ActionResult> {
+  await requireAdmin();
   const supabase = await createClient();
 
   const { data: existing } = await supabase

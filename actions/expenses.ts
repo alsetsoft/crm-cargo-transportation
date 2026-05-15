@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { logAudit } from "@/lib/audit";
+import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { expenseInputSchema, type ExpenseInput } from "@/lib/validation/expense";
 
@@ -21,6 +22,7 @@ function buildPayload(input: ExpenseInput) {
 export async function createExpenseAction(
   input: ExpenseInput,
 ): Promise<ActionResult> {
+  await requireAdmin();
   const parsed = expenseInputSchema.safeParse(input);
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Невірні дані" };
@@ -50,6 +52,7 @@ export async function updateExpenseAction(
   id: string,
   input: ExpenseInput,
 ): Promise<ActionResult> {
+  await requireAdmin();
   const parsed = expenseInputSchema.safeParse(input);
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Невірні дані" };
@@ -75,6 +78,7 @@ export async function updateExpenseAction(
 }
 
 export async function deleteExpenseAction(id: string): Promise<ActionResult> {
+  await requireAdmin();
   const supabase = await createClient();
 
   const { data: existing } = await supabase
