@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation";
 
+import Stack from "@mui/material/Stack";
+
 import { PageHeader } from "@/components/crm/page-header";
 import { listDriversForSelect } from "@/lib/data/drivers";
 import { getVehicle } from "@/lib/data/vehicles";
@@ -22,7 +24,7 @@ export default async function EditVehiclePage({ params }: PageProps) {
   }
 
   return (
-    <>
+    <Stack spacing={3}>
       <PageHeader
         title={`Зміна авто · ${vehicle.plate} · ${vehicle.unit}`}
         backHref="/vehicles"
@@ -33,6 +35,6 @@ export default async function EditVehiclePage({ params }: PageProps) {
         vehicle={vehicle}
         driverOptions={driverOptions}
       />
-    </>
+    </Stack>
   );
 }

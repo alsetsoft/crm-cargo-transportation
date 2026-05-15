@@ -1,21 +1,15 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Stack from "@mui/material/Stack";
+import TextField from "@mui/material/TextField";
 import { useTransition } from "react";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { Controller, useForm } from "react-hook-form";
+import { toast } from "@/lib/toast";
 
 import { signInAction } from "@/actions/auth";
-import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import {
   signInSchema,
   type SignInFormInput,
@@ -29,7 +23,10 @@ type LoginFormProps = {
 export function LoginForm({ redirectTo }: LoginFormProps) {
   const [isPending, startTransition] = useTransition();
 
-  const form = useForm<SignInFormInput, unknown, SignInInput>({
+  const {
+    control,
+    handleSubmit,
+  } = useForm<SignInFormInput, unknown, SignInInput>({
     resolver: zodResolver(signInSchema),
     defaultValues: { email: "", password: "" },
   });
@@ -46,50 +43,63 @@ export function LoginForm({ redirectTo }: LoginFormProps) {
   };
 
   return (
-    <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        className="space-y-4 rounded-xl border border-border/70 bg-card p-6 shadow-sm"
-      >
-        <FormField
-          control={form.control}
+    <Box
+      component="form"
+      onSubmit={handleSubmit(onSubmit)}
+      noValidate
+      sx={{
+        borderRadius: 2,
+        border: 1,
+        borderColor: "divider",
+        bgcolor: "background.paper",
+        p: 3,
+      }}
+    >
+      <Stack spacing={2}>
+        <Controller
+          control={control}
           name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email</FormLabel>
-              <FormControl>
-                <Input
-                  type="email"
-                  autoComplete="email"
-                  placeholder="you@company.ua"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
+          render={({ field, fieldState }) => (
+            <TextField
+              {...field}
+              label="Email"
+              type="email"
+              autoComplete="email"
+              placeholder="you@company.ua"
+              fullWidth
+              error={!!fieldState.error}
+              helperText={fieldState.error?.message}
+            />
           )}
         />
-        <FormField
-          control={form.control}
+
+        <Controller
+          control={control}
           name="password"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Пароль</FormLabel>
-              <FormControl>
-                <Input
-                  type="password"
-                  autoComplete="current-password"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
+          render={({ field, fieldState }) => (
+            <TextField
+              {...field}
+              label="Пароль"
+              type="password"
+              autoComplete="current-password"
+              fullWidth
+              error={!!fieldState.error}
+              helperText={fieldState.error?.message}
+            />
           )}
         />
-        <Button type="submit" className="w-full" disabled={isPending}>
+
+        <Button
+          type="submit"
+          fullWidth
+          variant="contained"
+          size="large"
+          disabled={isPending}
+          sx={{ mt: 1 }}
+        >
           {isPending ? "Вхід..." : "Увійти"}
         </Button>
-      </form>
-    </Form>
+      </Stack>
+    </Box>
   );
 }

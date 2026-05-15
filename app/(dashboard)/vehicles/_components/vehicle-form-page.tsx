@@ -1,33 +1,23 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { Controller, useForm } from "react-hook-form";
+
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import MenuItem from "@mui/material/MenuItem";
+import Stack from "@mui/material/Stack";
+import TextField from "@mui/material/TextField";
 
 import { createVehicleAction, updateVehicleAction } from "@/actions/vehicles";
-import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+import { LinkBehavior } from "@/components/crm/link-behavior";
 import { VEHICLE_STATUS_LABELS } from "@/lib/constants";
 import type { VehicleRow } from "@/lib/data/vehicles";
+import { toast } from "@/lib/toast";
 import {
   vehicleInputSchema,
   type VehicleFormInput,
@@ -49,7 +39,7 @@ export function VehicleFormPage(props: VehicleFormPageProps) {
 
   const vehicle = props.mode === "edit" ? props.vehicle : undefined;
 
-  const form = useForm<VehicleFormInput, unknown, VehicleInput>({
+  const { control, handleSubmit } = useForm<VehicleFormInput, unknown, VehicleInput>({
     resolver: zodResolver(vehicleInputSchema),
     defaultValues: {
       unit: vehicle?.unit ?? "",
@@ -80,179 +70,208 @@ export function VehicleFormPage(props: VehicleFormPageProps) {
   };
 
   return (
-    <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        className="panel-card space-y-4 p-5 sm:p-6"
-      >
-        <div className="grid gap-3 sm:grid-cols-[1.4fr_0.8fr]">
-          <FormField
-            control={form.control}
-            name="unit"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Марка / модель</FormLabel>
-                <FormControl>
-                  <Input placeholder="DAF XF 480" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="plate"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Держномер</FormLabel>
-                <FormControl>
-                  <Input placeholder="AA 1234 BB" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <FormField
-            control={form.control}
-            name="current_driver_id"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Закріплений водій</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  value={field.value ?? "none"}
-                >
-                  <FormControl>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Не закріплено" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="none">Не закріплено</SelectItem>
-                    {props.driverOptions.map((d) => (
-                      <SelectItem key={d.id} value={d.id}>
-                        {d.full_name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="status"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Статус</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <FormControl>
-                    <SelectTrigger className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {Object.entries(VEHICLE_STATUS_LABELS).map(([value, label]) => (
-                      <SelectItem key={value} value={value}>
-                        {label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        <div className="grid gap-3 sm:grid-cols-3">
-          <FormField
-            control={form.control}
-            name="fuel_norm_l_100km"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Розхід, л/100км</FormLabel>
-                <FormControl>
-                  <Input
-                    type="text"
-                    inputMode="decimal"
-                    placeholder="32"
-                    name={field.name}
-                    ref={field.ref}
-                    onBlur={field.onBlur}
-                    onChange={field.onChange}
-                    value={(field.value as number | string | undefined) ?? ""}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="service_next_date"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Наступне ТО</FormLabel>
-                <FormControl>
-                  <Input type="date" {...field} value={field.value ?? ""} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="service_next_odometer"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>ТО на пробігу, км</FormLabel>
-                <FormControl>
-                  <Input
-                    type="text"
-                    inputMode="numeric"
-                    placeholder="150000"
-                    name={field.name}
-                    ref={field.ref}
-                    onBlur={field.onBlur}
-                    onChange={field.onChange}
-                    value={(field.value as number | string | undefined) ?? ""}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+    <Card>
+      <CardContent>
+        <Box
+          component="form"
+          onSubmit={handleSubmit(onSubmit)}
+          sx={{ display: "grid", gap: 3 }}
+        >
+          {/* Row 1: unit + plate */}
+          <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+            <Controller
+              control={control}
+              name="unit"
+              render={({ field, fieldState }) => (
+                <TextField
+                  {...field}
+                  label="Марка / модель"
+                  placeholder="DAF XF 480"
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message}
+                  fullWidth
+                  sx={{ flexGrow: 1 }}
+                />
+              )}
+            />
+            <Controller
+              control={control}
+              name="plate"
+              render={({ field, fieldState }) => (
+                <TextField
+                  {...field}
+                  label="Держномер"
+                  placeholder="AA 1234 BB"
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message}
+                  fullWidth
+                  sx={{ width: { sm: 160 }, flexShrink: 0 }}
+                />
+              )}
+            />
+          </Stack>
 
-        <FormField
-          control={form.control}
-          name="notes"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Примітки</FormLabel>
-              <FormControl>
-                <Textarea rows={3} {...field} value={field.value ?? ""} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <div className="flex justify-end gap-2 border-t border-border/60 pt-4">
-          <Button type="button" variant="outline" asChild disabled={isPending}>
-            <Link href="/vehicles">Скасувати</Link>
-          </Button>
-          <Button type="submit" disabled={isPending}>
-            {isPending
-              ? "Збереження..."
-              : props.mode === "create"
-                ? "Створити"
-                : "Зберегти"}
-          </Button>
-        </div>
-      </form>
-    </Form>
+          {/* Row 2: current_driver_id + status */}
+          <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+            <Controller
+              control={control}
+              name="current_driver_id"
+              render={({ field, fieldState }) => (
+                <TextField
+                  {...field}
+                  value={field.value ?? "none"}
+                  select
+                  label="Закріплений водій"
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message}
+                  fullWidth
+                  SelectProps={{ MenuProps: { disableScrollLock: true } }}
+                >
+                  <MenuItem value="none">Не закріплено</MenuItem>
+                  {props.driverOptions.map((d) => (
+                    <MenuItem key={d.id} value={d.id}>
+                      {d.full_name}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              )}
+            />
+            <Controller
+              control={control}
+              name="status"
+              render={({ field, fieldState }) => (
+                <TextField
+                  {...field}
+                  select
+                  label="Статус"
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message}
+                  fullWidth
+                  SelectProps={{ MenuProps: { disableScrollLock: true } }}
+                >
+                  {Object.entries(VEHICLE_STATUS_LABELS).map(([value, label]) => (
+                    <MenuItem key={value} value={value}>
+                      {label}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              )}
+            />
+          </Stack>
+
+          {/* Row 3: fuel_norm + service_next_date + service_next_odometer */}
+          <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+            <Controller
+              control={control}
+              name="fuel_norm_l_100km"
+              render={({ field, fieldState }) => (
+                <TextField
+                  label="Розхід, л/100км"
+                  placeholder="32"
+                  type="text"
+                  inputProps={{ inputMode: "decimal" }}
+                  name={field.name}
+                  ref={field.ref}
+                  onBlur={field.onBlur}
+                  onChange={field.onChange}
+                  value={(field.value as number | string | undefined) ?? ""}
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message}
+                  fullWidth
+                />
+              )}
+            />
+            <Controller
+              control={control}
+              name="service_next_date"
+              render={({ field, fieldState }) => (
+                <TextField
+                  {...field}
+                  value={field.value ?? ""}
+                  label="Наступне ТО"
+                  type="date"
+                  InputLabelProps={{ shrink: true }}
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message}
+                  fullWidth
+                />
+              )}
+            />
+            <Controller
+              control={control}
+              name="service_next_odometer"
+              render={({ field, fieldState }) => (
+                <TextField
+                  label="ТО на пробігу, км"
+                  placeholder="150000"
+                  type="text"
+                  inputProps={{ inputMode: "numeric" }}
+                  name={field.name}
+                  ref={field.ref}
+                  onBlur={field.onBlur}
+                  onChange={field.onChange}
+                  value={(field.value as number | string | undefined) ?? ""}
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message}
+                  fullWidth
+                />
+              )}
+            />
+          </Stack>
+
+          {/* Row 4: notes */}
+          <Controller
+            control={control}
+            name="notes"
+            render={({ field, fieldState }) => (
+              <TextField
+                {...field}
+                value={field.value ?? ""}
+                label="Примітки"
+                multiline
+                rows={3}
+                error={!!fieldState.error}
+                helperText={fieldState.error?.message}
+                fullWidth
+              />
+            )}
+          />
+
+          {/* Action bar */}
+          <Stack
+            direction="row"
+            justifyContent="flex-end"
+            spacing={1.5}
+            sx={{
+              borderTop: 1,
+              borderColor: "divider",
+              pt: 2.5,
+              mt: 1,
+            }}
+          >
+            <Button
+              component={LinkBehavior}
+              href="/vehicles"
+              variant="outlined"
+              disabled={isPending}
+            >
+              Скасувати
+            </Button>
+            <Button
+              type="submit"
+              variant="contained"
+              size="large"
+              disabled={isPending}
+            >
+              {isPending
+                ? "Збереження..."
+                : props.mode === "create"
+                  ? "Створити"
+                  : "Зберегти"}
+            </Button>
+          </Stack>
+        </Box>
+      </CardContent>
+    </Card>
   );
 }

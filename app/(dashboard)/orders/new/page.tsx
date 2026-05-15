@@ -1,3 +1,6 @@
+import Stack from "@mui/material/Stack";
+import Alert from "@mui/material/Alert";
+
 import { PageHeader } from "@/components/crm/page-header";
 import { listActiveClients } from "@/lib/data/clients";
 import { listDriversForSelect } from "@/lib/data/drivers";
@@ -17,13 +20,13 @@ export default async function NewOrderPage() {
   ]);
 
   return (
-    <>
+    <Stack spacing={3}>
       <PageHeader title="Нове замовлення" backHref="/orders" backLabel="До журналу" />
 
       {clients.length === 0 ? (
-        <p className="rounded-xl border border-dashed border-warning/40 bg-warning/10 p-4 text-sm text-warning-foreground">
+        <Alert severity="warning">
           Спочатку додайте принаймні одного клієнта на сторінці «Клієнти».
-        </p>
+        </Alert>
       ) : (
         <OrderFormPage
           mode="create"
@@ -33,6 +36,6 @@ export default async function NewOrderPage() {
           vehicles={vehicles}
         />
       )}
-    </>
+    </Stack>
   );
 }

@@ -1,8 +1,7 @@
+import MuiButton from "@mui/material/Button";
 import { Plus } from "lucide-react";
-import Link from "next/link";
 
 import { ModulePage } from "@/components/crm/module-page";
-import { Button } from "@/components/ui/button";
 import { listExpenses } from "@/lib/data/expenses";
 
 import { ExpensesTable } from "./_components/expenses-table";
@@ -18,12 +17,14 @@ export default async function ExpensesPage() {
       title="Витрати"
       description="Загальний реєстр витрат — як прив'язаних до замовлень, так і власних."
       actions={
-        <Button asChild>
-          <Link href="/expenses/new">
-            <Plus className="size-4" />
-            Нова витрата
-          </Link>
-        </Button>
+        <MuiButton
+          href="/expenses/new"
+          variant="contained"
+          size="large"
+          startIcon={<Plus size={18} />}
+        >
+          Нова витрата
+        </MuiButton>
       }
     >
       <ExpensesTable rows={rows} />

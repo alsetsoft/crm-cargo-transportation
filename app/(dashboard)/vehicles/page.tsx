@@ -1,8 +1,7 @@
+import MuiButton from "@mui/material/Button";
 import { Plus } from "lucide-react";
-import Link from "next/link";
 
 import { ModulePage } from "@/components/crm/module-page";
-import { Button } from "@/components/ui/button";
 import { listVehicles } from "@/lib/data/vehicles";
 
 import { VehiclesTable } from "./_components/vehicles-table";
@@ -18,12 +17,14 @@ export default async function VehiclesPage() {
       title="Автомобілі"
       description="Картки ТЗ з технічними характеристиками та нормативами розходу. Сервісна книга — окремо на кожному авто."
       actions={
-        <Button asChild>
-          <Link href="/vehicles/new">
-            <Plus className="size-4" />
-            Нове авто
-          </Link>
-        </Button>
+        <MuiButton
+          href="/vehicles/new"
+          variant="contained"
+          size="large"
+          startIcon={<Plus size={18} />}
+        >
+          Нове авто
+        </MuiButton>
       }
     >
       <VehiclesTable rows={rows} />

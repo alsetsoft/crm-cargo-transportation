@@ -28,9 +28,20 @@ export const serviceProcedureInputSchema = z
     period_days: optionalPositiveInt,
     notes: optionalNotes,
   })
-  .refine((v) => v.period_km != null || v.period_days != null, {
-    message: "Вкажіть період у км або днях",
-    path: ["period_km"],
+  .superRefine((v, ctx) => {
+    if (v.period_km == null && v.period_days == null) {
+      // For insurance the km field is hidden in the UI — attach the
+      // error to period_days so it lands on a visible input. For other
+      // types either field is acceptable.
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message:
+          v.type === "insurance"
+            ? "Вкажіть період у днях"
+            : "Вкажіть період у км або днях",
+        path: ["period_days"],
+      });
+    }
   });
 
 export type ServiceProcedureFormInput = z.input<typeof serviceProcedureInputSchema>;

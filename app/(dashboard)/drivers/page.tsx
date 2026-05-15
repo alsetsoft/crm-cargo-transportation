@@ -1,8 +1,7 @@
+import MuiButton from "@mui/material/Button";
 import { Plus } from "lucide-react";
-import Link from "next/link";
 
 import { ModulePage } from "@/components/crm/module-page";
-import { Button } from "@/components/ui/button";
 import { listDrivers } from "@/lib/data/drivers";
 
 import { DriversTable } from "./_components/drivers-table";
@@ -18,12 +17,14 @@ export default async function DriversPage() {
       title="Водії"
       description="Облік водійського складу: статус, прив'язка до авто, рейтинг ефективності."
       actions={
-        <Button asChild>
-          <Link href="/drivers/new">
-            <Plus className="size-4" />
-            Новий водій
-          </Link>
-        </Button>
+        <MuiButton
+          href="/drivers/new"
+          variant="contained"
+          size="large"
+          startIcon={<Plus size={18} />}
+        >
+          Новий водій
+        </MuiButton>
       }
     >
       <DriversTable rows={rows} />

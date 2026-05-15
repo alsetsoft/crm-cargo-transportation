@@ -1,5 +1,14 @@
 import { notFound } from "next/navigation";
+import { ClipboardList, Phone, Wallet } from "lucide-react";
 
+import Avatar from "@mui/material/Avatar";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import Grid from "@mui/material/Grid2";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
+
+import { KpiCard } from "@/components/crm/kpi-card";
 import { ModulePage } from "@/components/crm/module-page";
 import { StatusBadge } from "@/components/crm/status-badge";
 import {
@@ -8,6 +17,7 @@ import {
   type ClientStatus,
 } from "@/lib/constants";
 import { getClient, listClients } from "@/lib/data/clients";
+import { PRIMARY_CONTAINER_TINT } from "@/lib/theme";
 import { listOrdersForClient } from "@/lib/data/orders";
 import { formatUah } from "@/lib/format";
 
@@ -55,46 +65,88 @@ export default async function ClientDetailPage({
         />
       }
     >
-      <section className="kpi-grid">
-        <div className="panel-card p-5">
-          <div className="text-xs uppercase tracking-wide text-muted-foreground">
-            Замовлень
-          </div>
-          <div className="mt-1 text-2xl font-semibold tabular-nums">
-            {ordersCount}
-          </div>
-        </div>
-        <div className="panel-card p-5">
-          <div className="text-xs uppercase tracking-wide text-muted-foreground">
-            Оборот
-          </div>
-          <div className="mt-1 text-2xl font-semibold tabular-nums">
-            {formatUah(turnover)}
-          </div>
-        </div>
-        <div className="panel-card p-5">
-          <div className="text-xs uppercase tracking-wide text-muted-foreground">
-            Контакти
-          </div>
-          <div className="mt-1 space-y-1 text-sm">
-            <div>{client.phone ?? "—"}</div>
-            <div className="text-muted-foreground">{client.email ?? "—"}</div>
-          </div>
-        </div>
-      </section>
+      {/* KPI grid */}
+      <Grid container spacing={2}>
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+          <KpiCard
+            label="Замовлень"
+            value={String(ordersCount)}
+            icon={ClipboardList}
+            tone="info"
+          />
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+          <KpiCard
+            label="Оборот"
+            value={formatUah(turnover)}
+            icon={Wallet}
+            tone="success"
+          />
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+          {/* Contacts card — multi-line value, so custom Card instead of KpiCard */}
+          <Card sx={{ height: "100%" }}>
+            <CardContent>
+              <Stack
+                direction="row"
+                justifyContent="space-between"
+                alignItems="flex-start"
+                spacing={2}
+              >
+                <Stack spacing={0.5} sx={{ minWidth: 0 }}>
+                  <Typography variant="overline" color="text.secondary">
+                    Контакти
+                  </Typography>
+                  <Typography variant="body2" fontWeight={500}>
+                    {client.phone ?? "—"}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {client.email ?? "—"}
+                  </Typography>
+                </Stack>
+                <Avatar
+                  variant="rounded"
+                  sx={{
+                    bgcolor: PRIMARY_CONTAINER_TINT,
+                    color: "primary.main",
+                    width: 44,
+                    height: 44,
+                    borderRadius: 1.5,
+                    flexShrink: 0,
+                  }}
+                >
+                  <Phone size={20} />
+                </Avatar>
+              </Stack>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
 
-      <section className="space-y-3">
-        <h2 className="section-title">Історія замовлень</h2>
+      {/* Orders history */}
+      <Stack spacing={1.5}>
+        <Typography variant="h6" component="h2">
+          Історія замовлень
+        </Typography>
         <OrdersTable rows={orders} />
-      </section>
+      </Stack>
 
+      {/* Notes */}
       {client.notes && (
-        <section className="panel-card p-5">
-          <h2 className="section-title mb-2">Примітки</h2>
-          <p className="whitespace-pre-wrap text-sm text-muted-foreground">
-            {client.notes}
-          </p>
-        </section>
+        <Card>
+          <CardContent>
+            <Typography variant="h6" component="h2" gutterBottom>
+              Примітки
+            </Typography>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ whiteSpace: "pre-wrap" }}
+            >
+              {client.notes}
+            </Typography>
+          </CardContent>
+        </Card>
       )}
     </ModulePage>
   );

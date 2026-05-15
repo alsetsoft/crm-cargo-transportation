@@ -1,7 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 
-import { Toaster } from "@/components/ui/sonner";
+import { Toaster } from "@/components/crm/toaster";
+import Providers from "./providers";
 import "./globals.css";
 
 const inter = Inter({
@@ -27,9 +28,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="uk" className={inter.variable}>
-      <body className="min-h-screen antialiased">
-        {children}
-        <Toaster richColors position="top-center" />
+      <body>
+        <Providers>
+          {children}
+          <Toaster />
+        </Providers>
       </body>
     </html>
   );

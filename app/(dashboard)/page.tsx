@@ -1,15 +1,26 @@
+import Box from "@mui/material/Box";
+import Card from "@mui/material/Card";
+import Grid from "@mui/material/Grid2";
+import Link from "@mui/material/Link";
+import Stack from "@mui/material/Stack";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import Typography from "@mui/material/Typography";
 import {
+  ArrowRight,
   ClipboardList,
+  TrendingUp,
   Truck,
-  UserRound,
   Wallet,
 } from "lucide-react";
-import Link from "next/link";
 
 import { KpiCard } from "@/components/crm/kpi-card";
 import { ModulePage } from "@/components/crm/module-page";
 import { StatusBadge } from "@/components/crm/status-badge";
-import { Button } from "@/components/ui/button";
 import {
   ORDER_STATUS_LABELS,
   ORDER_STATUS_TONES,
@@ -17,7 +28,7 @@ import {
 } from "@/lib/constants";
 import { getDashboardKpi } from "@/lib/data/dashboard";
 import { listOrders } from "@/lib/data/orders";
-import { formatNumber, formatUah } from "@/lib/format";
+import { formatDateTime, formatNumber, formatUah } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -29,103 +40,157 @@ export default async function DashboardPage() {
 
   return (
     <ModulePage
-      eyebrow="VlasnaCRM · Етап 1"
-      title="Аналітика автопарку"
-      description="Базовий облік рейсів: ключові метрики, останні замовлення та клієнти з заборгованістю."
-      actions={
-        <Button asChild variant="panel">
-          <Link href="/orders">Перейти до журналу</Link>
-        </Button>
-      }
+      eyebrow="VlasnaCRM"
+      title="Аналітика"
+      description="Загальний огляд операційних показників автопарку в реальному часі."
     >
-      <section className="kpi-grid">
-        <KpiCard
-          label="Активні замовлення"
-          value={formatNumber(kpi.activeOrders)}
-          icon={ClipboardList}
-          delta="Нові + в процесі"
-          tone="info"
-        />
-        <KpiCard
-          label="Авто в рейсі"
-          value={formatNumber(kpi.vehiclesOnTrip)}
-          icon={Truck}
-          delta="Зайнятий рухомий склад"
-          tone="warning"
-        />
-        <KpiCard
-          label="Доступні водії"
-          value={formatNumber(kpi.driversAvailable)}
-          icon={UserRound}
-          delta="Готові до виїзду"
-          tone="success"
-        />
-        <KpiCard
-          label="Оборот за місяць"
-          value={formatUah(kpi.monthlyRevenue)}
-          icon={Wallet}
-          delta="Сума за поточний місяць"
-          tone="info"
-        />
-      </section>
+      {/* KPI row */}
+      <Grid container spacing={2}>
+        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
+          <KpiCard
+            label="Авто в рейсі"
+            value={formatNumber(kpi.vehiclesOnTrip)}
+            icon={Truck}
+            tone="default"
+          />
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
+          <KpiCard
+            label="Активні замовлення"
+            value={formatNumber(kpi.activeOrders)}
+            icon={ClipboardList}
+            tone="info"
+          />
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
+          <KpiCard
+            label="Доступні водії"
+            value={formatNumber(kpi.driversAvailable)}
+            icon={TrendingUp}
+            tone="success"
+          />
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
+          <KpiCard
+            label="Оборот за місяць"
+            value={formatUah(kpi.monthlyRevenue)}
+            icon={Wallet}
+            tone="success"
+          />
+        </Grid>
+      </Grid>
 
-      <section>
-        <div className="panel-card overflow-hidden">
-          <header className="flex items-center justify-between border-b border-border/70 px-5 py-4">
-            <div>
-              <h2 className="section-title">Останні замовлення</h2>
-              <p className="text-xs text-muted-foreground">
-                Найновіші 5 рейсів — швидкий огляд завантаженості.
-              </p>
-            </div>
-            <Button asChild variant="ghost" size="sm">
-              <Link href="/orders">Всі</Link>
-            </Button>
-          </header>
-          {latestOrders.length === 0 ? (
-            <p className="p-6 text-sm text-muted-foreground">
-              Замовлень ще немає — створіть перше на сторінці «Замовлення».
-            </p>
-          ) : (
-            <ul className="divide-y divide-border/60">
-              {latestOrders.map((row) => {
-                const status = row.status as OrderStatus | null;
-                const from = row.loading_place?.trim();
-                const to = row.unloading_place?.trim();
-                const routeText =
-                  from && to
-                    ? `${from} → ${to}`
-                    : (from ?? to ?? "Без маршруту");
-                return (
-                  <li
-                    key={row.id ?? row.number ?? ""}
-                    className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 px-5 py-3 text-sm"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono text-muted-foreground">№{row.number}</span>
-                        <span className="truncate font-medium text-foreground">{row.client_name}</span>
-                      </div>
-                      <div className="truncate text-xs text-muted-foreground">
-                        {routeText} · {row.driver_full_name ?? "Без водія"}
-                      </div>
-                    </div>
-                    <div className="flex shrink-0 items-center gap-3">
-                      <span className="font-medium">{formatUah(row.price_uah)}</span>
-                      {status && (
-                        <StatusBadge
-                          label={ORDER_STATUS_LABELS[status]}
-                          tone={ORDER_STATUS_TONES[status]}
-                        />
-                      )}
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </div>
-      </section>
+      {/* Last orders */}
+      <Card variant="outlined">
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="space-between"
+          spacing={2}
+          sx={{ px: 2.5, py: 2 }}
+        >
+          <Typography variant="h6" component="h2">
+            Останні замовлення
+          </Typography>
+          <Link
+            href="/orders"
+            underline="hover"
+            sx={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 0.5,
+              fontWeight: 500,
+              fontSize: "0.875rem",
+            }}
+          >
+            Всі замовлення
+            <ArrowRight size={16} />
+          </Link>
+        </Stack>
+
+        {latestOrders.length === 0 ? (
+          <Typography variant="body2" color="text.secondary" sx={{ p: 3 }}>
+            Замовлень ще немає — створіть перше на сторінці «Замовлення».
+          </Typography>
+        ) : (
+          <TableContainer>
+            <Table sx={{ minWidth: 720 }}>
+              <TableHead>
+                <TableRow sx={{ bgcolor: "action.hover" }}>
+                  <TableCell>№</TableCell>
+                  <TableCell>Створено</TableCell>
+                  <TableCell>Замовник</TableCell>
+                  <TableCell>Водій</TableCell>
+                  <TableCell>Статус</TableCell>
+                  <TableCell align="right">Ціна</TableCell>
+                  <TableCell align="right">Прибуток</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {latestOrders.map((row) => {
+                  const status = row.status as OrderStatus | null;
+                  return (
+                    <TableRow
+                      key={row.id ?? row.number ?? ""}
+                      hover
+                    >
+                      <TableCell sx={{ fontFamily: "monospace" }}>
+                        {row.number ?? "—"}
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          color: "text.secondary",
+                          fontVariantNumeric: "tabular-nums",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {row.created_at ? formatDateTime(row.created_at) : "—"}
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" fontWeight={500} noWrap>
+                          {row.client_name ?? "—"}
+                        </Typography>
+                      </TableCell>
+                      <TableCell sx={{ color: "text.secondary" }}>
+                        {row.driver_full_name ?? "—"}
+                      </TableCell>
+                      <TableCell>
+                        {status && (
+                          <StatusBadge
+                            label={ORDER_STATUS_LABELS[status]}
+                            tone={ORDER_STATUS_TONES[status]}
+                          />
+                        )}
+                      </TableCell>
+                      <TableCell
+                        align="right"
+                        sx={{ fontVariantNumeric: "tabular-nums" }}
+                      >
+                        {formatUah(row.price_uah)}
+                      </TableCell>
+                      <TableCell
+                        align="right"
+                        sx={{
+                          fontVariantNumeric: "tabular-nums",
+                          fontWeight: 600,
+                          color:
+                            (row.actual_profit_uah ?? 0) >= 0
+                              ? "success.main"
+                              : "error.main",
+                        }}
+                      >
+                        {formatUah(row.actual_profit_uah)}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
+        {/* Tail spacing inside Card */}
+        <Box sx={{ pb: 1 }} />
+      </Card>
     </ModulePage>
   );
 }

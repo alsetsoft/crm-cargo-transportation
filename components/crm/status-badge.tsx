@@ -1,5 +1,6 @@
-import { Badge } from "@/components/ui/badge";
-import type { BadgeTone } from "@/lib/constants";
+import Chip from "@mui/material/Chip";
+
+import { TONE_TO_MUI_COLOR, type BadgeTone } from "@/lib/constants";
 
 type StatusBadgeProps = {
   label: string;
@@ -7,15 +8,13 @@ type StatusBadgeProps = {
 };
 
 export function StatusBadge({ label, tone = "secondary" }: StatusBadgeProps) {
-  const variant =
-    tone === "default"
-      ? "default"
-      : (tone as
-          | "success"
-          | "warning"
-          | "info"
-          | "destructive"
-          | "secondary"
-          | "default");
-  return <Badge variant={variant}>{label}</Badge>;
+  return (
+    <Chip
+      label={label}
+      size="small"
+      color={TONE_TO_MUI_COLOR[tone]}
+      variant="filled"
+      sx={{ fontWeight: 500 }}
+    />
+  );
 }

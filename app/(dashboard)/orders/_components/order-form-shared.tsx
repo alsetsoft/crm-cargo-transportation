@@ -2,27 +2,19 @@
 
 import { Plus, Trash2 } from "lucide-react";
 import { useEffect, useMemo } from "react";
-import { useFieldArray, useForm, useWatch } from "react-hook-form";
+import { Controller, useFieldArray, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Divider from "@mui/material/Divider";
+import IconButton from "@mui/material/IconButton";
+import MenuItem from "@mui/material/MenuItem";
+import Paper from "@mui/material/Paper";
+import Stack from "@mui/material/Stack";
+import TextField from "@mui/material/TextField";
+import Typography from "@mui/material/Typography";
+
 import {
   ORDER_STATUS_LABELS,
   PAYMENT_FORM_LABELS,
@@ -44,11 +36,8 @@ export type DriverOption = {
 };
 export type VehicleOption = { id: string; unit: string; plate: string };
 
-export { Form };
-
 function toDateTimeLocal(iso: string | null | undefined): string {
   if (!iso) return "";
-  // 2026-05-13T10:00:00+00:00 → 2026-05-13T10:00 (for input[type=datetime-local])
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "";
   const pad = (n: number) => String(n).padStart(2, "0");
@@ -62,11 +51,6 @@ type UseOrderFormArgs = {
   drivers: DriverOption[];
 };
 
-/**
- * Shared react-hook-form controller for the order form — owns default values,
- * the expenses field array, and the live profitability preview. Used by both
- * the edit dialog and the standalone create page.
- */
 export function useOrderForm({
   order,
   expenses = [],
@@ -209,10 +193,6 @@ type OrderFormBodyProps = {
   vehicles: VehicleOption[];
 };
 
-/**
- * The full set of order form sections — shared between the dialog and page.
- * Інформація + Операційні дані on the left, Фінанси on the right.
- */
 export function OrderFormBody({
   form,
   expensesField,
@@ -221,515 +201,635 @@ export function OrderFormBody({
   drivers,
   vehicles,
 }: OrderFormBodyProps) {
-  // ── Інформація ──────────────────────────────────────
-  const infoSection = (
-    <section className="space-y-3">
-      <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-        Інформація
-      </h3>
-      <div className="grid gap-3 sm:grid-cols-6">
-        <FormField
-          control={form.control}
-          name="number"
-          render={({ field }) => (
-            <FormItem className="sm:col-span-1">
-              <FormLabel>№</FormLabel>
-              <FormControl>
-                <Input placeholder="1024" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="client_id"
-          render={({ field }) => (
-            <FormItem className="sm:col-span-3">
-              <FormLabel>Замовник</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
-                <FormControl>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Оберіть клієнта" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {clients.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>
-                      {c.code} · {c.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="status"
-          render={({ field }) => (
-            <FormItem className="sm:col-span-2">
-              <FormLabel>Статус</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
-                <FormControl>
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {Object.entries(ORDER_STATUS_LABELS).map(([v, l]) => (
-                    <SelectItem key={v} value={v}>
-                      {l}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </div>
+  const { control } = form;
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        <FormField
-          control={form.control}
-          name="loading_place"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Початкова точка</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="Київ, вул. Промислова, 1"
-                  {...field}
-                  value={field.value ?? ""}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="unloading_place"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Кінцева точка</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="Львів, вул. Городоцька, 200"
-                  {...field}
-                  value={field.value ?? ""}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </div>
-
-      <div className="grid gap-3 sm:grid-cols-2">
-        <FormField
-          control={form.control}
-          name="driver_id"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Водій</FormLabel>
-              <Select
-                onValueChange={field.onChange}
-                value={field.value ?? "none"}
+  return (
+    <Stack spacing={3}>
+      {/* ── Basics: number, client, status ──────────────────────────── */}
+      <Stack spacing={2}>
+        <Typography variant="subtitle2" color="text.secondary">
+          Основне
+        </Typography>
+        <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+          <Controller
+            control={control}
+            name="number"
+            render={({ field, fieldState }) => (
+              <TextField
+                {...field}
+                label="№"
+                placeholder="1024"
+                error={!!fieldState.error}
+                helperText={fieldState.error?.message}
+                sx={{ width: { sm: 110 }, flexShrink: 0 }}
+                fullWidth
+              />
+            )}
+          />
+          <Controller
+            control={control}
+            name="client_id"
+            render={({ field, fieldState }) => (
+              <TextField
+                {...field}
+                select
+                label="Замовник"
+                error={!!fieldState.error}
+                helperText={fieldState.error?.message}
+                fullWidth
+                sx={{ flexGrow: 1 }}
+                SelectProps={{ MenuProps: { disableScrollLock: true } }}
               >
-                <FormControl>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Не призначено" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="none">Не призначено</SelectItem>
-                  {drivers.map((d) => (
-                    <SelectItem key={d.id} value={d.id}>
-                      {d.full_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="vehicle_id"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Авто</FormLabel>
-              <Select
-                onValueChange={field.onChange}
-                value={field.value ?? "none"}
+                {clients.map((c) => (
+                  <MenuItem key={c.id} value={c.id}>
+                    {c.code} · {c.name}
+                  </MenuItem>
+                ))}
+              </TextField>
+            )}
+          />
+          <Controller
+            control={control}
+            name="status"
+            render={({ field, fieldState }) => (
+              <TextField
+                {...field}
+                select
+                label="Статус"
+                error={!!fieldState.error}
+                helperText={fieldState.error?.message}
+                sx={{ width: { sm: 160 }, flexShrink: 0 }}
+                fullWidth
+                SelectProps={{ MenuProps: { disableScrollLock: true } }}
               >
-                <FormControl>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Не призначено" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="none">Не призначено</SelectItem>
-                  {vehicles.map((v) => (
-                    <SelectItem key={v.id} value={v.id}>
-                      {v.plate} · {v.unit}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </div>
+                {Object.entries(ORDER_STATUS_LABELS).map(([v, l]) => (
+                  <MenuItem key={v} value={v}>
+                    {l}
+                  </MenuItem>
+                ))}
+              </TextField>
+            )}
+          />
+        </Stack>
+      </Stack>
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        <FormField
-          control={form.control}
-          name="departed_at"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Час відправлення</FormLabel>
-              <FormControl>
-                <Input
-                  type="datetime-local"
-                  {...field}
-                  value={field.value ?? ""}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="arrived_at"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Час прибуття</FormLabel>
-              <FormControl>
-                <Input
-                  type="datetime-local"
-                  {...field}
-                  value={field.value ?? ""}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </div>
+      <Divider />
 
-      <FormField
-        control={form.control}
-        name="notes"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Примітки</FormLabel>
-            <FormControl>
-              <Textarea rows={2} {...field} value={field.value ?? ""} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-    </section>
-  );
+      {/* ── Route ────────────────────────────────────────────────────── */}
+      <Stack spacing={2}>
+        <Typography variant="subtitle2" color="text.secondary">
+          Маршрут
+        </Typography>
+        <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+          <Controller
+            control={control}
+            name="loading_place"
+            render={({ field, fieldState }) => (
+              <TextField
+                {...field}
+                value={field.value ?? ""}
+                label="Початкова точка"
+                placeholder="Київ, вул. Промислова, 1"
+                error={!!fieldState.error}
+                helperText={fieldState.error?.message}
+                fullWidth
+              />
+            )}
+          />
+          <Controller
+            control={control}
+            name="unloading_place"
+            render={({ field, fieldState }) => (
+              <TextField
+                {...field}
+                value={field.value ?? ""}
+                label="Кінцева точка"
+                placeholder="Львів, вул. Городоцька, 200"
+                error={!!fieldState.error}
+                helperText={fieldState.error?.message}
+                fullWidth
+              />
+            )}
+          />
+        </Stack>
+      </Stack>
 
-  // ── Операційні дані ──────────────────────────────────
-  const opsSection = (
-    <section className="space-y-3">
-      <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-        Операційні дані
-      </h3>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        <NumberFormField
-          name="volume_tons"
-          label="Об'єм, т"
-          step="0.1"
-          form={form}
-        />
-        <NumberFormField
-          name="odometer_start"
-          label="ОДО старт"
-          step="1"
-          form={form}
-        />
-        <NumberFormField
-          name="odometer_end"
-          label="ОДО кінець"
-          step="1"
-          form={form}
-        />
-        <NumberFormField
-          name="refuels_count"
-          label="Заправки"
-          step="1"
-          form={form}
-        />
-        <NumberFormField
-          name="fuel_cost_uah"
-          label="Вартість ДП, ₴"
-          step="0.01"
-          form={form}
-        />
-      </div>
-    </section>
-  );
+      <Divider />
 
-  // ── Фінанси ──────────────────────────────────────────
-  const financeSection = (
-    <section className="space-y-3">
-      <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-        Фінанси
-      </h3>
-      <div className="grid gap-3 sm:grid-cols-2">
-        <NumberFormField
-          name="price_uah"
-          label="Ціна, ₴"
-          step="0.01"
-          form={form}
-        />
-        <NumberFormField
-          name="distance_km"
-          label="Кілометри"
-          step="0.1"
-          form={form}
-        />
-        <NumberFormField
-          name="price_per_km_override_uah"
-          label="Ціна за км, ₴"
-          step="0.01"
-          form={form}
-        />
-        <NumberFormField
-          name="driver_commission_override_uah"
-          label="Комісія водія, ₴"
-          step="0.01"
-          form={form}
-        />
-      </div>
+      {/* ── Crew ─────────────────────────────────────────────────────── */}
+      <Stack spacing={2}>
+        <Typography variant="subtitle2" color="text.secondary">
+          Екіпаж
+        </Typography>
+        <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+          <Controller
+            control={control}
+            name="driver_id"
+            render={({ field, fieldState }) => (
+              <TextField
+                {...field}
+                value={field.value ?? "none"}
+                select
+                label="Водій"
+                error={!!fieldState.error}
+                helperText={fieldState.error?.message}
+                fullWidth
+                SelectProps={{ MenuProps: { disableScrollLock: true } }}
+              >
+                <MenuItem value="none">Не призначено</MenuItem>
+                {drivers.map((d) => (
+                  <MenuItem key={d.id} value={d.id}>
+                    {d.full_name}
+                  </MenuItem>
+                ))}
+              </TextField>
+            )}
+          />
+          <Controller
+            control={control}
+            name="vehicle_id"
+            render={({ field, fieldState }) => (
+              <TextField
+                {...field}
+                value={field.value ?? "none"}
+                select
+                label="Авто"
+                error={!!fieldState.error}
+                helperText={fieldState.error?.message}
+                fullWidth
+                SelectProps={{ MenuProps: { disableScrollLock: true } }}
+              >
+                <MenuItem value="none">Не призначено</MenuItem>
+                {vehicles.map((v) => (
+                  <MenuItem key={v.id} value={v.id}>
+                    {v.plate} · {v.unit}
+                  </MenuItem>
+                ))}
+              </TextField>
+            )}
+          />
+        </Stack>
+      </Stack>
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        <FormField
-          control={form.control}
-          name="payment_form"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Форма оплати</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
-                <FormControl>
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {Object.entries(PAYMENT_FORM_LABELS).map(([v, l]) => (
-                    <SelectItem key={v} value={v}>
-                      {l}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="payment_status"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Статус оплати</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
-                <FormControl>
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {Object.entries(PAYMENT_STATUS_LABELS).map(([v, l]) => (
-                    <SelectItem key={v} value={v}>
-                      {l}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </div>
+      <Divider />
 
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <h4 className="text-sm font-medium">Інші витрати</h4>
+      {/* ── Schedule ─────────────────────────────────────────────────── */}
+      <Stack spacing={2}>
+        <Typography variant="subtitle2" color="text.secondary">
+          Розклад
+        </Typography>
+        <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+          <Controller
+            control={control}
+            name="departed_at"
+            render={({ field, fieldState }) => (
+              <TextField
+                {...field}
+                value={field.value ?? ""}
+                type="datetime-local"
+                label="Час відправлення"
+                InputLabelProps={{ shrink: true }}
+                error={!!fieldState.error}
+                helperText={fieldState.error?.message}
+                fullWidth
+              />
+            )}
+          />
+          <Controller
+            control={control}
+            name="arrived_at"
+            render={({ field, fieldState }) => (
+              <TextField
+                {...field}
+                value={field.value ?? ""}
+                type="datetime-local"
+                label="Час прибуття"
+                InputLabelProps={{ shrink: true }}
+                error={!!fieldState.error}
+                helperText={fieldState.error?.message}
+                fullWidth
+              />
+            )}
+          />
+        </Stack>
+      </Stack>
+
+      <Divider />
+
+      {/* ── Cargo & distance ─────────────────────────────────────────── */}
+      <Stack spacing={2}>
+        <Typography variant="subtitle2" color="text.secondary">
+          Вантаж та відстань
+        </Typography>
+        <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+          <Controller
+            control={control}
+            name="volume_tons"
+            render={({ field, fieldState }) => (
+              <TextField
+                label="Об'єм, т"
+                placeholder="0.0"
+                inputProps={{ inputMode: "decimal", step: "0.1" }}
+                name={field.name}
+                ref={field.ref}
+                onBlur={field.onBlur}
+                onChange={field.onChange}
+                value={(field.value as number | string | undefined) ?? ""}
+                error={!!fieldState.error}
+                helperText={fieldState.error?.message}
+                fullWidth
+              />
+            )}
+          />
+          <Controller
+            control={control}
+            name="distance_km"
+            render={({ field, fieldState }) => (
+              <TextField
+                label="Кілометри"
+                placeholder="0"
+                inputProps={{ inputMode: "decimal", step: "0.1" }}
+                name={field.name}
+                ref={field.ref}
+                onBlur={field.onBlur}
+                onChange={field.onChange}
+                value={(field.value as number | string | undefined) ?? ""}
+                error={!!fieldState.error}
+                helperText={fieldState.error?.message}
+                fullWidth
+              />
+            )}
+          />
+          <Controller
+            control={control}
+            name="odometer_start"
+            render={({ field, fieldState }) => (
+              <TextField
+                label="ОДО старт"
+                placeholder="0"
+                inputProps={{ inputMode: "numeric", step: "1" }}
+                name={field.name}
+                ref={field.ref}
+                onBlur={field.onBlur}
+                onChange={field.onChange}
+                value={(field.value as number | string | undefined) ?? ""}
+                error={!!fieldState.error}
+                helperText={fieldState.error?.message}
+                fullWidth
+              />
+            )}
+          />
+          <Controller
+            control={control}
+            name="odometer_end"
+            render={({ field, fieldState }) => (
+              <TextField
+                label="ОДО кінець"
+                placeholder="0"
+                inputProps={{ inputMode: "numeric", step: "1" }}
+                name={field.name}
+                ref={field.ref}
+                onBlur={field.onBlur}
+                onChange={field.onChange}
+                value={(field.value as number | string | undefined) ?? ""}
+                error={!!fieldState.error}
+                helperText={fieldState.error?.message}
+                fullWidth
+              />
+            )}
+          />
+        </Stack>
+      </Stack>
+
+      <Divider />
+
+      {/* ── Pricing ──────────────────────────────────────────────────── */}
+      <Stack spacing={2}>
+        <Typography variant="subtitle2" color="text.secondary">
+          Фінанси
+        </Typography>
+        <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+          <Controller
+            control={control}
+            name="price_uah"
+            render={({ field, fieldState }) => (
+              <TextField
+                label="Ціна, ₴"
+                placeholder="0.00"
+                inputProps={{ inputMode: "decimal", step: "0.01" }}
+                name={field.name}
+                ref={field.ref}
+                onBlur={field.onBlur}
+                onChange={field.onChange}
+                value={(field.value as number | string | undefined) ?? ""}
+                error={!!fieldState.error}
+                helperText={fieldState.error?.message}
+                fullWidth
+              />
+            )}
+          />
+          <Controller
+            control={control}
+            name="price_per_km_override_uah"
+            render={({ field, fieldState }) => (
+              <TextField
+                label="Ціна за км, ₴"
+                placeholder="0.00"
+                inputProps={{ inputMode: "decimal", step: "0.01" }}
+                name={field.name}
+                ref={field.ref}
+                onBlur={field.onBlur}
+                onChange={field.onChange}
+                value={(field.value as number | string | undefined) ?? ""}
+                error={!!fieldState.error}
+                helperText={fieldState.error?.message}
+                fullWidth
+              />
+            )}
+          />
+          <Controller
+            control={control}
+            name="driver_commission_override_uah"
+            render={({ field, fieldState }) => (
+              <TextField
+                label="Комісія водія, ₴"
+                placeholder="0.00"
+                inputProps={{ inputMode: "decimal", step: "0.01" }}
+                name={field.name}
+                ref={field.ref}
+                onBlur={field.onBlur}
+                onChange={field.onChange}
+                value={(field.value as number | string | undefined) ?? ""}
+                error={!!fieldState.error}
+                helperText={fieldState.error?.message}
+                fullWidth
+              />
+            )}
+          />
+        </Stack>
+        <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+          <Controller
+            control={control}
+            name="payment_form"
+            render={({ field, fieldState }) => (
+              <TextField
+                {...field}
+                select
+                label="Форма оплати"
+                error={!!fieldState.error}
+                helperText={fieldState.error?.message}
+                fullWidth
+                SelectProps={{ MenuProps: { disableScrollLock: true } }}
+              >
+                {Object.entries(PAYMENT_FORM_LABELS).map(([v, l]) => (
+                  <MenuItem key={v} value={v}>
+                    {l}
+                  </MenuItem>
+                ))}
+              </TextField>
+            )}
+          />
+          <Controller
+            control={control}
+            name="payment_status"
+            render={({ field, fieldState }) => (
+              <TextField
+                {...field}
+                select
+                label="Статус оплати"
+                error={!!fieldState.error}
+                helperText={fieldState.error?.message}
+                fullWidth
+                SelectProps={{ MenuProps: { disableScrollLock: true } }}
+              >
+                {Object.entries(PAYMENT_STATUS_LABELS).map(([v, l]) => (
+                  <MenuItem key={v} value={v}>
+                    {l}
+                  </MenuItem>
+                ))}
+              </TextField>
+            )}
+          />
+        </Stack>
+      </Stack>
+
+      <Divider />
+
+      {/* ── Fuel ─────────────────────────────────────────────────────── */}
+      <Stack spacing={2}>
+        <Typography variant="subtitle2" color="text.secondary">
+          Паливо
+        </Typography>
+        <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+          <Controller
+            control={control}
+            name="refuels_count"
+            render={({ field, fieldState }) => (
+              <TextField
+                label="Заправки"
+                placeholder="0"
+                inputProps={{ inputMode: "numeric", step: "1" }}
+                name={field.name}
+                ref={field.ref}
+                onBlur={field.onBlur}
+                onChange={field.onChange}
+                value={(field.value as number | string | undefined) ?? ""}
+                error={!!fieldState.error}
+                helperText={fieldState.error?.message}
+                fullWidth
+              />
+            )}
+          />
+          <Controller
+            control={control}
+            name="fuel_cost_uah"
+            render={({ field, fieldState }) => (
+              <TextField
+                label="Вартість ДП, ₴"
+                placeholder="0.00"
+                inputProps={{ inputMode: "decimal", step: "0.01" }}
+                name={field.name}
+                ref={field.ref}
+                onBlur={field.onBlur}
+                onChange={field.onChange}
+                value={(field.value as number | string | undefined) ?? ""}
+                error={!!fieldState.error}
+                helperText={fieldState.error?.message}
+                fullWidth
+              />
+            )}
+          />
+        </Stack>
+      </Stack>
+
+      <Divider />
+
+      {/* ── Expenses (nested field array) ────────────────────────────── */}
+      <Stack spacing={2}>
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="space-between"
+        >
+          <Typography variant="h6" component="h2">
+            Інші витрати
+          </Typography>
           <Button
             type="button"
-            variant="outline"
-            size="sm"
-            onClick={() =>
-              expensesField.append({
-                name: "",
-                amount_uah: 0,
-              })
-            }
+            variant="outlined"
+            size="small"
+            startIcon={<Plus size={16} />}
+            onClick={() => expensesField.append({ name: "", amount_uah: 0 })}
           >
-            <Plus className="size-4" />
             Додати витрату
           </Button>
-        </div>
+        </Stack>
+
         {expensesField.fields.length === 0 ? (
-          <p className="text-xs text-muted-foreground">
+          <Typography variant="body2" color="text.secondary">
             Додаткових витрат немає.
-          </p>
+          </Typography>
         ) : (
-          <div className="space-y-2">
-            {expensesField.fields.map((row, index) => (
-              <div
-                key={row.id}
-                className="grid gap-2 sm:grid-cols-[1fr_160px_auto] items-end rounded-md border border-border/60 p-2"
+          <Stack spacing={1}>
+            {expensesField.fields.map((fieldItem, index) => (
+              <Stack
+                key={fieldItem.id}
+                direction={{ xs: "column", sm: "row" }}
+                spacing={1}
+                alignItems={{ sm: "flex-start" }}
               >
-                <FormField
-                  control={form.control}
+                <Controller
+                  control={control}
                   name={`expenses.${index}.name`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-xs">Назва</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Платний участок, навантаження…"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
+                  render={({ field, fieldState }) => (
+                    <TextField
+                      {...field}
+                      label="Назва"
+                      placeholder="Платний участок, навантаження…"
+                      error={!!fieldState.error}
+                      helperText={fieldState.error?.message}
+                      fullWidth
+                      sx={{ flexGrow: 1 }}
+                    />
                   )}
                 />
-                <FormField
-                  control={form.control}
+                <Controller
+                  control={control}
                   name={`expenses.${index}.amount_uah`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-xs">Сума, ₴</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="text"
-                          inputMode="decimal"
-                          name={field.name}
-                          ref={field.ref}
-                          onBlur={field.onBlur}
-                          onChange={field.onChange}
-                          value={
-                            (field.value as number | string | undefined) ?? ""
-                          }
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
+                  render={({ field, fieldState }) => (
+                    <TextField
+                      label="Сума, ₴"
+                      inputProps={{ inputMode: "decimal" }}
+                      name={field.name}
+                      ref={field.ref}
+                      onBlur={field.onBlur}
+                      onChange={field.onChange}
+                      value={
+                        (field.value as number | string | undefined) ?? ""
+                      }
+                      error={!!fieldState.error}
+                      helperText={fieldState.error?.message}
+                      sx={{ width: { sm: 160 }, flexShrink: 0 }}
+                      fullWidth
+                    />
                   )}
                 />
-                <Button
+                <IconButton
                   type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  aria-label="Видалити"
+                  color="error"
+                  aria-label="Видалити витрату"
                   onClick={() => expensesField.remove(index)}
+                  sx={{
+                    alignSelf: { xs: "flex-end", sm: "auto" },
+                    mt: { sm: 0.5 },
+                    p: 1.5,
+                  }}
                 >
-                  <Trash2 className="size-4" />
-                </Button>
-              </div>
+                  <Trash2 size={18} />
+                </IconButton>
+              </Stack>
             ))}
-          </div>
+          </Stack>
         )}
-      </div>
 
-      <div className="rounded-xl border border-border/60 bg-surface p-3 text-sm">
-        <div className="grid gap-1 sm:grid-cols-2">
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Інші витрати:</span>
-            <span className="tabular-nums">
-              {formatUahPrecise(preview.expensesTotal, 2)}
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Комісія водія:</span>
-            <span className="tabular-nums">
-              {formatUahPrecise(preview.commission, 2)}
-            </span>
-          </div>
-          <div className="flex justify-between font-medium">
-            <span>Чистий прибуток:</span>
-            <span
-              className={`tabular-nums ${preview.profit >= 0 ? "text-success" : "text-warning"}`}
-            >
-              {formatUahPrecise(preview.profit, 2)}
-            </span>
-          </div>
-          <div className="flex justify-between font-medium">
-            <span>Рентабельність:</span>
-            <span className="tabular-nums">
-              {formatPercent(preview.profitability)}
-            </span>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
+        {/* Live profitability preview */}
+        <Paper
+          variant="outlined"
+          sx={{ p: 2, borderRadius: 2 }}
+        >
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
+              gap: 1,
+            }}
+          >
+            <Stack direction="row" justifyContent="space-between">
+              <Typography variant="body2" color="text.secondary">
+                Інші витрати:
+              </Typography>
+              <Typography variant="body2" sx={{ fontVariantNumeric: "tabular-nums" }}>
+                {formatUahPrecise(preview.expensesTotal, 2)}
+              </Typography>
+            </Stack>
+            <Stack direction="row" justifyContent="space-between">
+              <Typography variant="body2" color="text.secondary">
+                Комісія водія:
+              </Typography>
+              <Typography variant="body2" sx={{ fontVariantNumeric: "tabular-nums" }}>
+                {formatUahPrecise(preview.commission, 2)}
+              </Typography>
+            </Stack>
+            <Stack direction="row" justifyContent="space-between">
+              <Typography variant="body2" fontWeight={500}>
+                Чистий прибуток:
+              </Typography>
+              <Typography
+                variant="body2"
+                fontWeight={500}
+                sx={{
+                  fontVariantNumeric: "tabular-nums",
+                  color: preview.profit >= 0 ? "success.main" : "warning.main",
+                }}
+              >
+                {formatUahPrecise(preview.profit, 2)}
+              </Typography>
+            </Stack>
+            <Stack direction="row" justifyContent="space-between">
+              <Typography variant="body2" fontWeight={500}>
+                Рентабельність:
+              </Typography>
+              <Typography
+                variant="body2"
+                fontWeight={500}
+                sx={{ fontVariantNumeric: "tabular-nums" }}
+              >
+                {formatPercent(preview.profitability)}
+              </Typography>
+            </Stack>
+          </Box>
+        </Paper>
+      </Stack>
 
-  return (
-    <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
-      <div className="min-w-0 space-y-6">
-        {infoSection}
-        {opsSection}
-      </div>
-      <div className="min-w-0 space-y-6">{financeSection}</div>
-    </div>
-  );
-}
+      <Divider />
 
-type NumberFormFieldProps = {
-  name: keyof OrderFormInput;
-  label: string;
-  step: string;
-  form: OrderFormController["form"];
-  placeholder?: string;
-};
-
-function NumberFormField({
-  name,
-  label,
-  step,
-  form,
-  placeholder,
-}: NumberFormFieldProps) {
-  const isInteger = step === "1";
-  return (
-    <FormField
-      control={form.control}
-      name={name}
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel>{label}</FormLabel>
-          <FormControl>
-            <Input
-              type="text"
-              inputMode={isInteger ? "numeric" : "decimal"}
-              placeholder={placeholder}
-              name={field.name}
-              ref={field.ref}
-              onBlur={field.onBlur}
-              onChange={field.onChange}
-              value={(field.value as number | string | undefined) ?? ""}
-            />
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
+      {/* ── Notes ────────────────────────────────────────────────────── */}
+      <Controller
+        control={control}
+        name="notes"
+        render={({ field, fieldState }) => (
+          <TextField
+            {...field}
+            value={field.value ?? ""}
+            label="Примітки"
+            multiline
+            rows={3}
+            error={!!fieldState.error}
+            helperText={fieldState.error?.message}
+            fullWidth
+          />
+        )}
+      />
+    </Stack>
   );
 }

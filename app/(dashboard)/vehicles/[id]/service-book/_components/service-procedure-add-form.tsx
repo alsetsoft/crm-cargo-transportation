@@ -2,30 +2,21 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus, X } from "lucide-react";
-import { useState, useTransition } from "react";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { useEffect, useState, useTransition } from "react";
+import { Controller, useForm, useWatch } from "react-hook-form";
+
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import IconButton from "@mui/material/IconButton";
+import MenuItem from "@mui/material/MenuItem";
+import Stack from "@mui/material/Stack";
+import TextField from "@mui/material/TextField";
 
 import { createServiceProcedureAction } from "@/actions/service-procedures";
-import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { VEHICLE_DOCUMENT_TYPE_LABELS } from "@/lib/constants";
+import { toast } from "@/lib/toast";
 import {
   serviceProcedureInputSchema,
   type ServiceProcedureFormInput,
@@ -42,24 +33,37 @@ export function ServiceProcedureAddForm({
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
-  const form = useForm<ServiceProcedureFormInput, unknown, ServiceProcedureInput>(
-    {
-      resolver: zodResolver(serviceProcedureInputSchema),
-      defaultValues: {
-        type: "technical_inspection",
-        period_km: undefined,
-        period_days: undefined,
-        notes: "",
-      },
+  const { control, handleSubmit, reset, setValue } = useForm<
+    ServiceProcedureFormInput,
+    unknown,
+    ServiceProcedureInput
+  >({
+    resolver: zodResolver(serviceProcedureInputSchema),
+    defaultValues: {
+      type: "technical_inspection",
+      period_km: undefined,
+      period_days: undefined,
+      notes: "",
     },
-  );
+  });
+
+  // Insurance ("Страховка") is a calendar-only event — odometer doesn't
+  // apply. Hide the km field for that type and zero the value out so it
+  // doesn't sneak through validation.
+  const currentType = useWatch({ control, name: "type" });
+  const isKmRelevant = currentType !== "insurance";
+  useEffect(() => {
+    if (!isKmRelevant) {
+      setValue("period_km", undefined, { shouldValidate: true });
+    }
+  }, [isKmRelevant, setValue]);
 
   const onSubmit = (values: ServiceProcedureInput) => {
     startTransition(async () => {
       const result = await createServiceProcedureAction(vehicleId, values);
       if (result.ok) {
         toast.success("Процедуру додано");
-        form.reset();
+        reset();
         setOpen(false);
       } else {
         toast.error(result.error);
@@ -69,126 +73,149 @@ export function ServiceProcedureAddForm({
 
   if (!open) {
     return (
-      <Button onClick={() => setOpen(true)}>
-        <Plus className="size-4" />
-        Додати процедуру
-      </Button>
+      <Box>
+        <Button
+          variant="contained"
+          startIcon={<Plus size={18} />}
+          onClick={() => setOpen(true)}
+        >
+          Додати процедуру
+        </Button>
+      </Box>
     );
   }
 
   return (
-    <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        className="panel-card grid w-full gap-3 p-4 sm:grid-cols-[1.4fr_1fr_1fr_1fr_auto] sm:items-end"
-      >
-        <FormField
-          control={form.control}
-          name="type"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Процедура</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
-                <FormControl>
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
+    <Card variant="outlined">
+      <CardContent>
+        <Box
+          component="form"
+          onSubmit={handleSubmit(onSubmit)}
+        >
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            spacing={2}
+            alignItems={{ xs: "stretch", sm: "flex-start" }}
+          >
+            {/* Procedure type */}
+            <Controller
+              control={control}
+              name="type"
+              render={({ field, fieldState }) => (
+                <TextField
+                  {...field}
+                  select
+                  label="Процедура"
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message}
+                  fullWidth
+                  sx={{ minWidth: { sm: 200 } }}
+                  SelectProps={{ MenuProps: { disableScrollLock: true } }}
+                >
                   {Object.entries(VEHICLE_DOCUMENT_TYPE_LABELS).map(
                     ([value, label]) => (
-                      <SelectItem key={value} value={value}>
+                      <MenuItem key={value} value={value}>
                         {label}
-                      </SelectItem>
+                      </MenuItem>
                     ),
                   )}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="period_km"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Період, км</FormLabel>
-              <FormControl>
-                <Input
-                  type="text"
-                  inputMode="numeric"
-                  placeholder="10000"
-                  name={field.name}
-                  ref={field.ref}
-                  onBlur={field.onBlur}
-                  onChange={field.onChange}
-                  value={(field.value as number | string | undefined) ?? ""}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="period_days"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Період, днів</FormLabel>
-              <FormControl>
-                <Input
-                  type="text"
-                  inputMode="numeric"
+                </TextField>
+              )}
+            />
+
+            {/* Period km — hidden for insurance (calendar-only event) */}
+            {isKmRelevant && (
+              <Controller
+                control={control}
+                name="period_km"
+                render={({ field, fieldState }) => (
+                  <TextField
+                    label="Період, км"
+                    placeholder="10000"
+                    type="text"
+                    inputProps={{ inputMode: "numeric" }}
+                    name={field.name}
+                    ref={field.ref}
+                    onBlur={field.onBlur}
+                    onChange={field.onChange}
+                    value={(field.value as number | string | undefined) ?? ""}
+                    error={!!fieldState.error}
+                    helperText={fieldState.error?.message}
+                    fullWidth
+                    sx={{ maxWidth: { sm: 140 } }}
+                  />
+                )}
+              />
+            )}
+
+            {/* Period days */}
+            <Controller
+              control={control}
+              name="period_days"
+              render={({ field, fieldState }) => (
+                <TextField
+                  label="Період, днів"
                   placeholder="365"
+                  type="text"
+                  inputProps={{ inputMode: "numeric" }}
                   name={field.name}
                   ref={field.ref}
                   onBlur={field.onBlur}
                   onChange={field.onChange}
                   value={(field.value as number | string | undefined) ?? ""}
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message}
+                  fullWidth
+                  sx={{ maxWidth: { sm: 140 } }}
                 />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="notes"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Примітки</FormLabel>
-              <FormControl>
-                <Textarea
-                  rows={1}
-                  placeholder="Опціонально"
+              )}
+            />
+
+            {/* Notes */}
+            <Controller
+              control={control}
+              name="notes"
+              render={({ field, fieldState }) => (
+                <TextField
                   {...field}
                   value={field.value ?? ""}
+                  label="Примітки"
+                  placeholder="Опціонально"
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message}
+                  fullWidth
                 />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <div className="flex gap-1">
-          <Button type="submit" disabled={isPending}>
-            {isPending ? "..." : "Додати"}
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            aria-label="Закрити"
-            onClick={() => {
-              form.reset();
-              setOpen(false);
-            }}
-            disabled={isPending}
-          >
-            <X className="size-4" />
-          </Button>
-        </div>
-      </form>
-    </Form>
+              )}
+            />
+
+            {/* Submit + cancel */}
+            <Stack
+              direction="row"
+              spacing={1}
+              sx={{ flexShrink: 0, pt: { xs: 0, sm: 1 } }}
+            >
+              <Button
+                type="submit"
+                variant="contained"
+                size="large"
+                disabled={isPending}
+              >
+                {isPending ? "..." : "Додати"}
+              </Button>
+              <IconButton
+                aria-label="Закрити"
+                onClick={() => {
+                  reset();
+                  setOpen(false);
+                }}
+                disabled={isPending}
+              >
+                <X size={18} />
+              </IconButton>
+            </Stack>
+          </Stack>
+        </Box>
+      </CardContent>
+    </Card>
   );
 }

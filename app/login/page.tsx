@@ -1,3 +1,7 @@
+import Box from "@mui/material/Box";
+import Container from "@mui/material/Container";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
 import { CarFront } from "lucide-react";
 import { redirect } from "next/navigation";
 
@@ -22,21 +26,46 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-muted/40 px-4 py-12">
-      <div className="w-full max-w-sm space-y-6">
-        <div className="flex flex-col items-center gap-3 text-center">
-          <div className="flex size-12 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-            <CarFront className="size-6" />
-          </div>
-          <div className="space-y-1">
-            <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
+    <Container
+      maxWidth="xs"
+      sx={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        py: 6,
+      }}
+    >
+      <Stack spacing={3} sx={{ width: "100%" }}>
+        {/* Logo + branding block */}
+        <Stack alignItems="center" spacing={1.5} sx={{ textAlign: "center" }}>
+          <Box
+            sx={{
+              width: 48,
+              height: 48,
+              borderRadius: 2,
+              bgcolor: "primary.main",
+              color: "primary.contrastText",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <CarFront size={24} />
+          </Box>
+          <Box>
+            <Typography variant="h6" component="h1" fontWeight={600}>
               Вантажні перевезення
-            </h1>
-            <p className="text-sm text-muted-foreground">Операційна CRM</p>
-          </div>
-        </div>
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Операційна CRM
+            </Typography>
+          </Box>
+        </Stack>
+
+        {/* Login form */}
         <LoginForm redirectTo={redirectTo} />
-      </div>
-    </main>
+      </Stack>
+    </Container>
   );
 }

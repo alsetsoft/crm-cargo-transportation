@@ -1,33 +1,23 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { Controller, useForm } from "react-hook-form";
+
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import MenuItem from "@mui/material/MenuItem";
+import Stack from "@mui/material/Stack";
+import TextField from "@mui/material/TextField";
 
 import { createClientAction, updateClientAction } from "@/actions/clients";
-import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+import { LinkBehavior } from "@/components/crm/link-behavior";
 import { CLIENT_STATUS_LABELS } from "@/lib/constants";
 import type { ClientRow } from "@/lib/data/clients";
+import { toast } from "@/lib/toast";
 import {
   clientInputSchema,
   type ClientFormInput,
@@ -45,7 +35,10 @@ export function ClientFormPage(props: ClientFormPageProps) {
   const client = props.mode === "edit" ? props.client : undefined;
   const defaultCode = props.mode === "create" ? props.defaultCode : undefined;
 
-  const form = useForm<ClientFormInput, unknown, ClientInput>({
+  const {
+    control,
+    handleSubmit,
+  } = useForm<ClientFormInput, unknown, ClientInput>({
     resolver: zodResolver(clientInputSchema),
     defaultValues: {
       code: client?.code ?? defaultCode ?? "",
@@ -77,143 +70,177 @@ export function ClientFormPage(props: ClientFormPageProps) {
   };
 
   return (
-    <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        className="panel-card space-y-4 p-5 sm:p-6"
-      >
-        <div className="grid gap-3 sm:grid-cols-[140px_1fr]">
-          <FormField
-            control={form.control}
-            name="code"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Код</FormLabel>
-                <FormControl>
-                  <Input placeholder="CL-001" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+    <Card>
+      <CardContent>
+        <Box
+          component="form"
+          onSubmit={handleSubmit(onSubmit)}
+          sx={{ display: "grid", gap: 3 }}
+        >
+          {/* Row 1: code + name */}
+          <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+            <Controller
+              control={control}
+              name="code"
+              render={({ field, fieldState }) => (
+                <TextField
+                  {...field}
+                  label="Код"
+                  placeholder="CL-001"
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message}
+                  fullWidth
+                  sx={{ width: { sm: 140 }, flexShrink: 0 }}
+                />
+              )}
+            />
+            <Controller
+              control={control}
+              name="name"
+              render={({ field, fieldState }) => (
+                <TextField
+                  {...field}
+                  label="Назва"
+                  placeholder="ТОВ «Агроінвест»"
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message}
+                  fullWidth
+                  sx={{ flexGrow: 1 }}
+                />
+              )}
+            />
+          </Stack>
+
+          {/* Row 2: contact_person + phone */}
+          <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+            <Controller
+              control={control}
+              name="contact_person"
+              render={({ field, fieldState }) => (
+                <TextField
+                  {...field}
+                  value={field.value ?? ""}
+                  label="Контактна особа"
+                  placeholder="ПІБ"
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message}
+                  fullWidth
+                />
+              )}
+            />
+            <Controller
+              control={control}
+              name="phone"
+              render={({ field, fieldState }) => (
+                <TextField
+                  {...field}
+                  value={field.value ?? ""}
+                  label="Телефон"
+                  placeholder="+380..."
+                  type="tel"
+                  inputProps={{ inputMode: "tel" }}
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message}
+                  fullWidth
+                />
+              )}
+            />
+          </Stack>
+
+          {/* Row 3: email + status */}
+          <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+            <Controller
+              control={control}
+              name="email"
+              render={({ field, fieldState }) => (
+                <TextField
+                  {...field}
+                  value={field.value ?? ""}
+                  label="Email"
+                  placeholder="ops@company.ua"
+                  type="email"
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message}
+                  fullWidth
+                />
+              )}
+            />
+            <Controller
+              control={control}
+              name="status"
+              render={({ field, fieldState }) => (
+                <TextField
+                  {...field}
+                  select
+                  label="Статус"
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message}
+                  fullWidth
+                  SelectProps={{ MenuProps: { disableScrollLock: true } }}
+                >
+                  {Object.entries(CLIENT_STATUS_LABELS).map(([value, label]) => (
+                    <MenuItem key={value} value={value}>
+                      {label}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              )}
+            />
+          </Stack>
+
+          {/* Row 4: notes */}
+          <Controller
+            control={control}
+            name="notes"
+            render={({ field, fieldState }) => (
+              <TextField
+                {...field}
+                value={field.value ?? ""}
+                label="Примітки"
+                multiline
+                rows={4}
+                error={!!fieldState.error}
+                helperText={fieldState.error?.message}
+                fullWidth
+              />
             )}
           />
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Назва</FormLabel>
-                <FormControl>
-                  <Input placeholder="ТОВ «Агроінвест»" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <FormField
-            control={form.control}
-            name="contact_person"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Контактна особа</FormLabel>
-                <FormControl>
-                  <Input placeholder="ПІБ" {...field} value={field.value ?? ""} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="phone"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Телефон</FormLabel>
-                <FormControl>
-                  <Input
-                    type="tel"
-                    inputMode="tel"
-                    placeholder="+380..."
-                    {...field}
-                    value={field.value ?? ""}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl>
-                  <Input
-                    type="email"
-                    placeholder="ops@company.ua"
-                    {...field}
-                    value={field.value ?? ""}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="status"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Статус</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <FormControl>
-                    <SelectTrigger className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {Object.entries(CLIENT_STATUS_LABELS).map(([value, label]) => (
-                      <SelectItem key={value} value={value}>
-                        {label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        <FormField
-          control={form.control}
-          name="notes"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Примітки</FormLabel>
-              <FormControl>
-                <Textarea rows={3} {...field} value={field.value ?? ""} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <div className="flex justify-end gap-2 border-t border-border/60 pt-4">
-          <Button type="button" variant="outline" asChild disabled={isPending}>
-            <Link href="/clients">Скасувати</Link>
-          </Button>
-          <Button type="submit" disabled={isPending}>
-            {isPending
-              ? "Збереження..."
-              : props.mode === "create"
-                ? "Створити"
-                : "Зберегти"}
-          </Button>
-        </div>
-      </form>
-    </Form>
+
+          {/* Action bar */}
+          <Stack
+            direction="row"
+            justifyContent="flex-end"
+            spacing={1.5}
+            sx={{
+              borderTop: 1,
+              borderColor: "divider",
+              pt: 2.5,
+              mt: 1,
+            }}
+          >
+            <Button
+              component={LinkBehavior}
+              href="/clients"
+              variant="outlined"
+              disabled={isPending}
+            >
+              Скасувати
+            </Button>
+            <Button
+              type="submit"
+              variant="contained"
+              size="large"
+              disabled={isPending}
+            >
+              {isPending
+                ? "Збереження..."
+                : props.mode === "create"
+                  ? "Створити"
+                  : "Зберегти"}
+            </Button>
+          </Stack>
+        </Box>
+      </CardContent>
+    </Card>
   );
 }

@@ -1,10 +1,25 @@
+"use client";
+
 import { Pencil } from "lucide-react";
-import Link from "next/link";
+
+import Box from "@mui/material/Box";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import Chip from "@mui/material/Chip";
+import IconButton from "@mui/material/IconButton";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
+import { useTheme } from "@mui/material/styles";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import {
+  DataGrid,
+  type GridColDef,
+  type GridColumnVisibilityModel,
+} from "@mui/x-data-grid";
 
 import { deleteExpenseAction } from "@/actions/expenses";
 import { ConfirmDeleteDialog } from "@/components/crm/confirm-delete-dialog";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { LinkBehavior } from "@/components/crm/link-behavior";
 import type { ExpenseListRow } from "@/lib/data/expenses";
 import { formatDate, formatUah } from "@/lib/format";
 
@@ -19,123 +34,242 @@ const SOURCE_LABELS: Record<ExpenseListRow["source"], string> = {
 };
 
 export function ExpensesTable({ rows }: ExpensesTableProps) {
-  if (rows.length === 0) {
-    return (
-      <div className="panel-card flex flex-col items-center gap-2 p-10 text-center">
-        <p className="text-base font-medium">Витрат ще немає</p>
-        <p className="text-sm text-muted-foreground">
-          Натисніть «Нова витрата», щоб додати першу.
-        </p>
-      </div>
-    );
-  }
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+
+  const columnVisibilityModel: GridColumnVisibilityModel = {
+    spent_at: !isMobile,
+    order_number: !isMobile,
+    notes: !isMobile,
+  };
 
   const total = rows.reduce((sum, r) => sum + Number(r.amount_uah ?? 0), 0);
 
+  const columns: GridColDef<ExpenseListRow>[] = [
+    {
+      field: "spent_at",
+      headerName: "Дата",
+      width: 130,
+      renderCell: ({ value }) => (
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ fontVariantNumeric: "tabular-nums" }}
+        >
+          {formatDate(value)}
+        </Typography>
+      ),
+    },
+    {
+      field: "name",
+      headerName: "Назва",
+      flex: 1,
+      minWidth: 160,
+      renderCell: ({ row }) => (
+        <Stack spacing={0.25} sx={{ py: 0.5 }}>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Typography variant="body2" fontWeight={500}>
+              {row.name}
+            </Typography>
+            {row.source !== "manual" && (
+              <Chip
+                label={SOURCE_LABELS[row.source]}
+                size="small"
+                variant="outlined"
+              />
+            )}
+          </Stack>
+          {isMobile && (
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ fontVariantNumeric: "tabular-nums" }}
+            >
+              {formatDate(row.spent_at)}
+              {row.order_number
+                ? ` · №${row.order_number}${row.client_name ? ` · ${row.client_name}` : ""}`
+                : ""}
+            </Typography>
+          )}
+        </Stack>
+      ),
+    },
+    {
+      field: "order_number",
+      headerName: "Замовлення",
+      width: 180,
+      sortable: false,
+      renderCell: ({ row }) =>
+        row.order_number ? (
+          <Stack spacing={0.25} sx={{ py: 0.5 }}>
+            <Typography
+              variant="body2"
+              sx={{ fontFamily: "monospace" }}
+            >
+              №{row.order_number}
+            </Typography>
+            {row.client_name && (
+              <Typography variant="caption" color="text.secondary">
+                {row.client_name}
+              </Typography>
+            )}
+          </Stack>
+        ) : (
+          <Typography variant="body2" color="text.secondary">
+            —
+          </Typography>
+        ),
+    },
+    {
+      field: "amount_uah",
+      headerName: "Сума",
+      width: 130,
+      type: "number",
+      align: "right",
+      headerAlign: "right",
+      renderCell: ({ value }) => (
+        <Typography variant="body2" sx={{ fontVariantNumeric: "tabular-nums" }}>
+          {formatUah(value)}
+        </Typography>
+      ),
+    },
+    {
+      field: "notes",
+      headerName: "Примітки",
+      flex: 1,
+      minWidth: 140,
+      sortable: false,
+      renderCell: ({ value }) => (
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          title={value ?? undefined}
+          sx={{ overflow: "hidden", textOverflow: "ellipsis" }}
+        >
+          {value ?? "—"}
+        </Typography>
+      ),
+    },
+    {
+      field: "actions",
+      headerName: "Дії",
+      width: 100,
+      sortable: false,
+      filterable: false,
+      align: "right",
+      headerAlign: "right",
+      renderCell: ({ row }) =>
+        row.source === "manual" ? (
+          <Stack direction="row" justifyContent="flex-end" alignItems="center">
+            <IconButton
+              component={LinkBehavior}
+              href={`/expenses/${row.id}/edit`}
+              aria-label="Редагувати"
+            >
+              <Pencil size={18} />
+            </IconButton>
+            <ConfirmDeleteDialog
+              title="Видалити витрату?"
+              description={`Витрату «${row.name}» буде видалено.`}
+              action={deleteExpenseAction}
+              id={row.id}
+            />
+          </Stack>
+        ) : (
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            title="Редагується у відповідному замовленні"
+          >
+            У замовленні
+          </Typography>
+        ),
+    },
+  ];
+
+  if (rows.length === 0) {
+    return (
+      <Card variant="outlined">
+        <CardContent>
+          <Stack alignItems="center" spacing={1.5} sx={{ py: 6 }}>
+            <Typography variant="subtitle1" fontWeight={500}>
+              Витрат ще немає
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Натисніть «Нова витрата», щоб додати першу.
+            </Typography>
+          </Stack>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
-    <div className="space-y-3">
-      <div className="panel-card flex items-center justify-between px-5 py-3 text-sm">
-        <span className="text-muted-foreground">Всього записів</span>
-        <div className="flex items-center gap-6">
-          <span className="tabular-nums">{rows.length}</span>
-          <span className="text-muted-foreground">Сума:</span>
-          <span className="font-medium tabular-nums">{formatUah(total)}</span>
-        </div>
-      </div>
-      <div className="panel-card overflow-x-auto">
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th className="hidden md:table-cell">Дата</th>
-              <th>Назва</th>
-              <th className="hidden md:table-cell">Замовлення</th>
-              <th className="text-right">Сума</th>
-              <th className="hidden md:table-cell">Примітки</th>
-              <th className="text-right">Дії</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr key={row.id}>
-                <td className="hidden text-muted-foreground tabular-nums md:table-cell">
-                  {formatDate(row.spent_at)}
-                </td>
-                <td className="font-medium text-foreground">
-                  <div className="flex items-center gap-2">
-                    <span>{row.name}</span>
-                    {row.source !== "manual" && (
-                      <Badge variant="secondary" className="font-normal">
-                        {SOURCE_LABELS[row.source]}
-                      </Badge>
-                    )}
-                  </div>
-                  <div className="mt-1 space-y-0.5 text-xs text-muted-foreground md:hidden">
-                    <div className="tabular-nums">{formatDate(row.spent_at)}</div>
-                    {row.order_number && (
-                      <div>
-                        №{row.order_number}
-                        {row.client_name ? ` · ${row.client_name}` : ""}
-                      </div>
-                    )}
-                  </div>
-                </td>
-                <td className="hidden md:table-cell">
-                  {row.order_number ? (
-                    <div>
-                      <div className="font-mono">№{row.order_number}</div>
-                      {row.client_name && (
-                        <div className="text-xs text-muted-foreground">
-                          {row.client_name}
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <span className="text-muted-foreground">—</span>
-                  )}
-                </td>
-                <td className="text-right tabular-nums">
-                  {formatUah(row.amount_uah)}
-                </td>
-                <td
-                  className="hidden max-w-[260px] truncate text-muted-foreground md:table-cell"
-                  title={row.notes ?? undefined}
-                >
-                  {row.notes ?? "—"}
-                </td>
-                <td className="text-right">
-                  {row.source === "manual" ? (
-                    <div className="flex items-center justify-end gap-1">
-                      <Button
-                        asChild
-                        variant="ghost"
-                        size="icon-sm"
-                        aria-label="Редагувати"
-                      >
-                        <Link href={`/expenses/${row.id}/edit`}>
-                          <Pencil className="size-4" />
-                        </Link>
-                      </Button>
-                      <ConfirmDeleteDialog
-                        title="Видалити витрату?"
-                        description={`Витрату «${row.name}» буде видалено.`}
-                        action={deleteExpenseAction}
-                        id={row.id}
-                      />
-                    </div>
-                  ) : (
-                    <span
-                      className="text-xs text-muted-foreground"
-                      title="Редагується у відповідному замовленні"
-                    >
-                      У замовленні
-                    </span>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+    <Stack spacing={1.5}>
+      {/* Summary bar */}
+      <Card variant="outlined">
+        <CardContent
+          sx={{
+            py: 1.5,
+            px: 2.5,
+            "&:last-child": { pb: 1.5 },
+          }}
+        >
+          <Stack
+            direction="row"
+            justifyContent="space-between"
+            alignItems="center"
+          >
+            <Typography variant="body2" color="text.secondary">
+              Всього записів
+            </Typography>
+            <Stack direction="row" spacing={3} alignItems="center">
+              <Typography
+                variant="body2"
+                sx={{ fontVariantNumeric: "tabular-nums" }}
+              >
+                {rows.length}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Сума:
+              </Typography>
+              <Typography
+                variant="body2"
+                fontWeight={500}
+                sx={{ fontVariantNumeric: "tabular-nums" }}
+              >
+                {formatUah(total)}
+              </Typography>
+            </Stack>
+          </Stack>
+        </CardContent>
+      </Card>
+
+      {/* Data grid */}
+      <Card variant="outlined">
+        <CardContent sx={{ p: 0 }}>
+          <Box sx={{ width: "100%" }}>
+            <DataGrid
+              rows={rows}
+              columns={columns}
+              getRowId={(row) => row.id}
+              columnVisibilityModel={columnVisibilityModel}
+              disableRowSelectionOnClick
+              autoHeight
+              pageSizeOptions={[10, 25, 50]}
+              initialState={{
+                pagination: {
+                  paginationModel: { pageSize: 25 },
+                },
+                sorting: {
+                  sortModel: [{ field: "spent_at", sort: "desc" }],
+                },
+              }}
+              sx={{ border: "none" }}
+            />
+          </Box>
+        </CardContent>
+      </Card>
+    </Stack>
   );
 }

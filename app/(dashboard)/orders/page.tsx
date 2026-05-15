@@ -1,8 +1,7 @@
+import MuiButton from "@mui/material/Button";
 import { Plus } from "lucide-react";
-import Link from "next/link";
 
 import { ModulePage } from "@/components/crm/module-page";
-import { Button } from "@/components/ui/button";
 import { listActiveClients } from "@/lib/data/clients";
 import { listOrders } from "@/lib/data/orders";
 
@@ -23,17 +22,23 @@ export default async function OrdersPage() {
       description="Реєстрація рейсів з прив'язкою клієнта, водія та авто. Рентабельність розраховується автоматично."
       actions={
         clients.length === 0 ? (
-          <Button disabled>
-            <Plus className="size-4" />
+          <MuiButton
+            variant="contained"
+            size="large"
+            startIcon={<Plus size={18} />}
+            disabled
+          >
             Нове замовлення
-          </Button>
+          </MuiButton>
         ) : (
-          <Button asChild>
-            <Link href="/orders/new">
-              <Plus className="size-4" />
-              Нове замовлення
-            </Link>
-          </Button>
+          <MuiButton
+            href="/orders/new"
+            variant="contained"
+            size="large"
+            startIcon={<Plus size={18} />}
+          >
+            Нове замовлення
+          </MuiButton>
         )
       }
     >

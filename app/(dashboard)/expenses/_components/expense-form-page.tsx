@@ -1,32 +1,22 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { Controller, useForm } from "react-hook-form";
+
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import MenuItem from "@mui/material/MenuItem";
+import Stack from "@mui/material/Stack";
+import TextField from "@mui/material/TextField";
 
 import { createExpenseAction, updateExpenseAction } from "@/actions/expenses";
-import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+import { LinkBehavior } from "@/components/crm/link-behavior";
 import type { ExpenseRow } from "@/lib/data/expenses";
+import { toast } from "@/lib/toast";
 import {
   expenseInputSchema,
   type ExpenseFormInput,
@@ -54,7 +44,7 @@ export function ExpenseFormPage(props: ExpenseFormPageProps) {
 
   const expense = props.mode === "edit" ? props.expense : undefined;
 
-  const form = useForm<ExpenseFormInput, unknown, ExpenseInput>({
+  const { control, handleSubmit } = useForm<ExpenseFormInput, unknown, ExpenseInput>({
     resolver: zodResolver(expenseInputSchema),
     defaultValues: {
       name: expense?.name ?? "",
@@ -84,115 +74,147 @@ export function ExpenseFormPage(props: ExpenseFormPageProps) {
   };
 
   return (
-    <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        className="panel-card space-y-4 p-5 sm:p-6"
-      >
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Назва</FormLabel>
-              <FormControl>
-                <Input placeholder="Ремонт зчеплення, паливо…" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <div className="grid gap-3 sm:grid-cols-2">
-          <FormField
-            control={form.control}
-            name="amount_uah"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Сума, ₴</FormLabel>
-                <FormControl>
-                  <Input
-                    type="text"
-                    inputMode="decimal"
-                    placeholder="0"
-                    name={field.name}
-                    ref={field.ref}
-                    onBlur={field.onBlur}
-                    onChange={field.onChange}
-                    value={(field.value as number | string | undefined) ?? ""}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+    <Card>
+      <CardContent>
+        <Box
+          component="form"
+          onSubmit={handleSubmit(onSubmit)}
+          sx={{ display: "grid", gap: 3 }}
+        >
+          {/* Row 1: name */}
+          <Controller
+            control={control}
+            name="name"
+            render={({ field, fieldState }) => (
+              <TextField
+                {...field}
+                label="Назва"
+                placeholder="Ремонт зчеплення, паливо…"
+                error={!!fieldState.error}
+                helperText={fieldState.error?.message}
+                fullWidth
+              />
             )}
           />
-          <FormField
-            control={form.control}
-            name="spent_at"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Дата</FormLabel>
-                <FormControl>
-                  <Input type="date" {...field} value={field.value ?? ""} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        <FormField
-          control={form.control}
-          name="order_id"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Замовлення (необов&apos;язково)</FormLabel>
-              <Select
-                onValueChange={field.onChange}
+
+          {/* Row 2: amount_uah + spent_at */}
+          <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+            <Controller
+              control={control}
+              name="amount_uah"
+              render={({ field, fieldState }) => (
+                <TextField
+                  label="Сума, ₴"
+                  placeholder="0"
+                  type="text"
+                  inputProps={{ inputMode: "decimal" }}
+                  name={field.name}
+                  inputRef={field.ref}
+                  onBlur={field.onBlur}
+                  onChange={field.onChange}
+                  value={(field.value as number | string | undefined) ?? ""}
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message}
+                  fullWidth
+                />
+              )}
+            />
+            <Controller
+              control={control}
+              name="spent_at"
+              render={({ field, fieldState }) => (
+                <TextField
+                  {...field}
+                  value={field.value ?? ""}
+                  label="Дата"
+                  type="date"
+                  InputLabelProps={{ shrink: true }}
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message}
+                  fullWidth
+                />
+              )}
+            />
+          </Stack>
+
+          {/* Row 3: order_id */}
+          <Controller
+            control={control}
+            name="order_id"
+            render={({ field, fieldState }) => (
+              <TextField
+                {...field}
                 value={field.value ?? "none"}
+                select
+                label="Замовлення (необов'язково)"
+                error={!!fieldState.error}
+                helperText={fieldState.error?.message}
+                fullWidth
+                SelectProps={{ MenuProps: { disableScrollLock: true } }}
               >
-                <FormControl>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Без прив'язки" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="none">Без прив&apos;язки</SelectItem>
-                  {props.orderOptions.map((o) => (
-                    <SelectItem key={o.id} value={o.id}>
-                      №{o.number} · {o.client_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="notes"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Примітки</FormLabel>
-              <FormControl>
-                <Textarea rows={3} {...field} value={field.value ?? ""} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <div className="flex justify-end gap-2 border-t border-border/60 pt-4">
-          <Button type="button" variant="outline" asChild disabled={isPending}>
-            <Link href="/expenses">Скасувати</Link>
-          </Button>
-          <Button type="submit" disabled={isPending}>
-            {isPending
-              ? "Збереження..."
-              : props.mode === "create"
-                ? "Створити"
-                : "Зберегти"}
-          </Button>
-        </div>
-      </form>
-    </Form>
+                <MenuItem value="none">Без прив&apos;язки</MenuItem>
+                {props.orderOptions.map((o) => (
+                  <MenuItem key={o.id} value={o.id}>
+                    №{o.number} · {o.client_name}
+                  </MenuItem>
+                ))}
+              </TextField>
+            )}
+          />
+
+          {/* Row 4: notes */}
+          <Controller
+            control={control}
+            name="notes"
+            render={({ field, fieldState }) => (
+              <TextField
+                {...field}
+                value={field.value ?? ""}
+                label="Примітки"
+                multiline
+                rows={3}
+                error={!!fieldState.error}
+                helperText={fieldState.error?.message}
+                fullWidth
+              />
+            )}
+          />
+
+          {/* Action bar */}
+          <Stack
+            direction="row"
+            justifyContent="flex-end"
+            spacing={1.5}
+            sx={{
+              borderTop: 1,
+              borderColor: "divider",
+              pt: 2.5,
+              mt: 1,
+            }}
+          >
+            <Button
+              component={LinkBehavior}
+              href="/expenses"
+              variant="outlined"
+              disabled={isPending}
+            >
+              Скасувати
+            </Button>
+            <Button
+              type="submit"
+              variant="contained"
+              size="large"
+              disabled={isPending}
+            >
+              {isPending
+                ? "Збереження..."
+                : props.mode === "create"
+                  ? "Створити"
+                  : "Зберегти"}
+            </Button>
+          </Stack>
+        </Box>
+      </CardContent>
+    </Card>
   );
 }

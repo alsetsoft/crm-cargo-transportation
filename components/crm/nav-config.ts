@@ -16,6 +16,8 @@ export type NavItem = {
   description?: string;
 };
 
+// Primary sidebar nav. "Coming soon" entries are defined locally inside
+// components/crm/app-shell.tsx (they have no route and are decorative).
 export const navigationItems: NavItem[] = [
   {
     title: "Аналітика",

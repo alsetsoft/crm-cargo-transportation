@@ -1,10 +1,16 @@
-import { Pencil } from "lucide-react";
-import Link from "next/link";
+import MuiButton from "@mui/material/Button";
+import { Pencil, Star, TrendingUp, Truck } from "lucide-react";
 import { notFound } from "next/navigation";
 
-import { PageHeader } from "@/components/crm/page-header";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import Grid from "@mui/material/Grid2";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
+
+import { KpiCard } from "@/components/crm/kpi-card";
+import { ModulePage } from "@/components/crm/module-page";
 import { StatusBadge } from "@/components/crm/status-badge";
-import { Button } from "@/components/ui/button";
 import {
   DRIVER_STATUS_LABELS,
   DRIVER_STATUS_TONES,
@@ -37,69 +43,85 @@ export default async function DriverDetailPage({ params }: PageProps) {
   const ordersCount = driverStats?.orders_count ?? orders.length;
 
   return (
-    <>
-      <PageHeader
-        title={driver.full_name}
-        backHref="/drivers"
-        backLabel="До списку"
-        actions={
-          <>
-            <StatusBadge
-              label={DRIVER_STATUS_LABELS[status]}
-              tone={DRIVER_STATUS_TONES[status]}
-            />
-            <Button variant="outline" size="sm" asChild>
-              <Link href={`/drivers/${driver.id}/edit`}>
-                <Pencil className="size-4" />
-                Редагувати
-              </Link>
-            </Button>
-          </>
-        }
-      />
+    <ModulePage
+      eyebrow={`Водій · ${driver.full_name}`}
+      title={driver.full_name}
+      description="Картка водія та історія поїздок."
+      actions={
+        <Stack direction="row" spacing={1.5} alignItems="center">
+          <StatusBadge
+            label={DRIVER_STATUS_LABELS[status]}
+            tone={DRIVER_STATUS_TONES[status]}
+          />
+          <MuiButton
+            href={`/drivers/${driver.id}/edit`}
+            variant="outlined"
+            startIcon={<Pencil size={16} />}
+          >
+            Редагувати
+          </MuiButton>
+        </Stack>
+      }
+    >
+      {/* KPI grid */}
+      <Grid container spacing={2}>
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+          <KpiCard
+            label="Рейсів"
+            value={String(ordersCount)}
+            icon={Truck}
+            tone="info"
+          />
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+          <KpiCard
+            label="Рейтинг"
+            value={
+              driver.rating != null ? formatNumber(driver.rating, 1) : "—"
+            }
+            icon={Star}
+            tone="warning"
+          />
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+          <KpiCard
+            label="Комісія, ₴/км"
+            value={
+              driver.commission_per_km_uah != null
+                ? formatUahPrecise(driver.commission_per_km_uah)
+                : "—"
+            }
+            icon={TrendingUp}
+            tone="success"
+          />
+        </Grid>
+      </Grid>
 
-      <section className="kpi-grid">
-        <div className="panel-card p-5">
-          <div className="text-xs uppercase tracking-wide text-muted-foreground">
-            Рейсів
-          </div>
-          <div className="mt-1 text-2xl font-semibold tabular-nums">
-            {ordersCount}
-          </div>
-        </div>
-        <div className="panel-card p-5">
-          <div className="text-xs uppercase tracking-wide text-muted-foreground">
-            Рейтинг
-          </div>
-          <div className="mt-1 text-2xl font-semibold tabular-nums">
-            {driver.rating != null ? formatNumber(driver.rating, 1) : "—"}
-          </div>
-        </div>
-        <div className="panel-card p-5">
-          <div className="text-xs uppercase tracking-wide text-muted-foreground">
-            Комісія, ₴/км
-          </div>
-          <div className="mt-1 text-2xl font-semibold tabular-nums">
-            {driver.commission_per_km_uah != null
-              ? formatUahPrecise(driver.commission_per_km_uah)
-              : "—"}
-          </div>
-        </div>
-      </section>
-
-      <section className="space-y-3">
-        <h2 className="section-title">Історія поїздок</h2>
+      {/* Trip history */}
+      <Stack spacing={1.5}>
+        <Typography variant="h6" component="h2">
+          Історія поїздок
+        </Typography>
         <OrdersTable rows={orders} />
-      </section>
+      </Stack>
 
+      {/* Notes */}
       {driver.notes && (
-        <section className="panel-card p-5">
-          <h2 className="section-title mb-2">Примітки</h2>
-          <p className="whitespace-pre-wrap text-sm text-muted-foreground">
-            {driver.notes}
-          </p>
-        </section>
+        <Card>
+          <CardContent>
+            <Typography variant="h6" component="h2" gutterBottom>
+              Примітки
+            </Typography>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ whiteSpace: "pre-wrap" }}
+            >
+              {driver.notes}
+            </Typography>
+          </CardContent>
+        </Card>
       )}
-    </>
+    </ModulePage>
   );
 }

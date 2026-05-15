@@ -1,8 +1,7 @@
+import MuiButton from "@mui/material/Button";
 import { Plus } from "lucide-react";
-import Link from "next/link";
 
 import { ModulePage } from "@/components/crm/module-page";
-import { Button } from "@/components/ui/button";
 import { listClients } from "@/lib/data/clients";
 
 import { ClientsTable } from "./_components/clients-table";
@@ -18,12 +17,14 @@ export default async function ClientsPage() {
       title="База клієнтів"
       description="Контрагенти-замовники з контактами, оборотом та контролем заборгованості."
       actions={
-        <Button asChild>
-          <Link href="/clients/new">
-            <Plus className="size-4" />
-            Новий клієнт
-          </Link>
-        </Button>
+        <MuiButton
+          href="/clients/new"
+          variant="contained"
+          size="large"
+          startIcon={<Plus size={18} />}
+        >
+          Новий клієнт
+        </MuiButton>
       }
     >
       <ClientsTable rows={rows} />

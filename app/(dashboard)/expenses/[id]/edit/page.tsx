@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation";
 
+import Stack from "@mui/material/Stack";
+
 import { PageHeader } from "@/components/crm/page-header";
 import { getExpense } from "@/lib/data/expenses";
 import { listOrders } from "@/lib/data/orders";
@@ -28,7 +30,7 @@ export default async function EditExpensePage({ params }: PageProps) {
   }));
 
   return (
-    <>
+    <Stack spacing={3}>
       <PageHeader
         title={`Зміна витрати · ${expense.name}`}
         backHref="/expenses"
@@ -39,6 +41,6 @@ export default async function EditExpensePage({ params }: PageProps) {
         expense={expense}
         orderOptions={orderOptions}
       />
-    </>
+    </Stack>
   );
 }

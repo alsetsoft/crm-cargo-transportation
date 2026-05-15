@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation";
 
+import Stack from "@mui/material/Stack";
+
 import { PageHeader } from "@/components/crm/page-header";
 import { getClient } from "@/lib/data/clients";
 
@@ -18,13 +20,13 @@ export default async function EditClientPage({ params }: PageProps) {
   }
 
   return (
-    <>
+    <Stack spacing={3}>
       <PageHeader
         title={`Зміна клієнта · ${client.name}`}
         backHref="/clients"
         backLabel="До бази"
       />
       <ClientFormPage mode="edit" client={client} />
-    </>
+    </Stack>
   );
 }

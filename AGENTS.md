@@ -31,6 +31,77 @@ This version has breaking changes — APIs, conventions, and file structure may 
     `"Зміна клієнта · ТОВ Агроінвест"`). The identifier provides context
     without needing a separate description line.
 
+## Links
+
+Routing-aware links go through `LinkBehavior` from
+[components/crm/link-behavior.tsx](components/crm/link-behavior.tsx)
+— a `"use client"` forwardRef wrapper around `next/link`, registered
+in [lib/theme.ts](lib/theme.ts) as `MuiButtonBase.defaultProps.LinkComponent`
+and `MuiLink.defaultProps.component`. React 19 / Next.js 16 forbids
+passing plain functions across the RSC boundary, so `component={NextLink}`
+is BANNED — but with the theme default in place, you never need to
+spell it out anyway.
+
+- **MUI components with `href`** (Button, IconButton, Link,
+  ListItemButton, anything backed by `ButtonBase`): just pass `href`.
+  The theme's `LinkComponent` default routes it through `LinkBehavior`
+  automatically. Do NOT add `component={LinkBehavior}` or
+  `component={NextLink}`.
+
+  ```tsx
+  // ✅ Right
+  <Button href="/clients" variant="outlined">Скасувати</Button>
+  <IconButton href={`/clients/${row.id}/edit`} aria-label="Редагувати">
+    <Pencil size={18} />
+  </IconButton>
+  <Link href={`/clients/${row.id}`} underline="hover">{row.name}</Link>
+
+  // ❌ Wrong — `component={NextLink}` crashes in RSC; explicit
+  // `component={LinkBehavior}` is redundant noise
+  <Button component={NextLink} href="/clients">…</Button>
+  <Button component={LinkBehavior} href="/clients">…</Button>
+  ```
+
+- **Non-MUI elements** (styled `<Box>`, plain anchors): wrap
+  `<NextLink>` around the styled content. Do NOT pass `NextLink` as
+  a `component` prop.
+
+  ```tsx
+  import NextLink from "next/link";
+
+  <NextLink href="/" style={{ textDecoration: "none", color: "inherit" }}>
+    <Box sx={{ ... }}>...</Box>
+  </NextLink>
+  ```
+
+## MUI Stack — no `divider` prop
+
+Do NOT use `<Stack divider={<Divider />}>` with `.map`-generated
+children. In this Next.js 16 / React 19 / MUI v6.5 combination the
+internal `React.Children.toArray` + `cloneElement` pass crashes
+SSR with "Element type is invalid: got undefined". Instead, render
+the divider manually between rows:
+
+```tsx
+// ✅ Works in SSR
+<Box>
+  {rows.map((row, idx) => (
+    <Box key={row.id}>
+      {idx > 0 && <Divider />}
+      <Row {...row} />
+    </Box>
+  ))}
+</Box>
+
+// ❌ Crashes SSR
+<Stack divider={<Divider />}>
+  {rows.map((row) => <Row key={row.id} {...row} />)}
+</Stack>
+```
+
+`<Stack divider={...}>` with static children (no `.map`) is fine —
+the failure only triggers with dynamically generated arrays.
+
 ## Database migrations
 
 - Apply schema changes via the Supabase MCP `apply_migration` tool only.

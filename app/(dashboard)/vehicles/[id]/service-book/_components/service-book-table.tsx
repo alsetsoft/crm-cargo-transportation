@@ -1,8 +1,11 @@
-import { StatusBadge } from "@/components/crm/status-badge";
-import {
-  VEHICLE_DOCUMENT_TYPE_LABELS,
-  type BadgeTone,
-} from "@/lib/constants";
+import Box from "@mui/material/Box";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import Chip from "@mui/material/Chip";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
+
+import { VEHICLE_DOCUMENT_TYPE_LABELS } from "@/lib/constants";
 import type {
   ServiceProcedureStatus,
   ServiceProcedureView,
@@ -23,11 +26,15 @@ const STATUS_LABELS: Record<ServiceProcedureStatus, string> = {
   unknown: "Не виконувалось",
 };
 
-const STATUS_TONES: Record<ServiceProcedureStatus, BadgeTone> = {
+// Map service procedure status to MUI Chip color
+const STATUS_MUI_COLORS: Record<
+  ServiceProcedureStatus,
+  "success" | "warning" | "error" | "default"
+> = {
   ok: "success",
   due_soon: "warning",
-  overdue: "destructive",
-  unknown: "secondary",
+  overdue: "error",
+  unknown: "default",
 };
 
 function formatPeriod(km: number | null, days: number | null): string {
@@ -49,109 +56,276 @@ function formatRemaining(
   return parts.join(" / ") || "—";
 }
 
+function remainingColor(
+  status: ServiceProcedureStatus,
+): "error.main" | "warning.main" | "text.primary" {
+  if (status === "overdue") return "error.main";
+  if (status === "due_soon") return "warning.main";
+  return "text.primary";
+}
+
 export function ServiceBookTable({
   rows,
   vehicleCurrentOdometer,
 }: ServiceBookTableProps) {
   if (rows.length === 0) {
     return (
-      <div className="panel-card flex flex-col items-center gap-2 p-10 text-center">
-        <p className="text-base font-medium">Процедур ще немає</p>
-        <p className="text-sm text-muted-foreground">
-          Додайте першу процедуру обслуговування — наприклад, ТО кожні 10000 км.
-        </p>
-      </div>
+      <Card variant="outlined">
+        <CardContent>
+          <Stack alignItems="center" spacing={1.5} sx={{ py: 6 }}>
+            <Typography variant="subtitle1" fontWeight={500}>
+              Процедур ще немає
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Додайте першу процедуру обслуговування — наприклад, ТО кожні 10000 км.
+            </Typography>
+          </Stack>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="space-y-3">
-      <div className="panel-card flex items-center justify-between px-5 py-3 text-sm">
-        <span className="text-muted-foreground">Поточний пробіг авто</span>
-        <span className="font-medium tabular-nums">
-          {vehicleCurrentOdometer > 0
-            ? `${formatNumber(vehicleCurrentOdometer)} км`
-            : "—"}
-        </span>
-      </div>
-      <div className="panel-card overflow-x-auto">
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>Процедура</th>
-              <th className="hidden md:table-cell">Період</th>
-              <th className="hidden md:table-cell">Останнє виконання</th>
-              <th className="hidden text-right md:table-cell">Пробіг</th>
-              <th className="hidden text-right md:table-cell">Залишок</th>
-              <th>Статус</th>
-              <th className="text-right">Дії</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr key={row.id}>
-                <td className="font-medium text-foreground">
-                  <div>{VEHICLE_DOCUMENT_TYPE_LABELS[row.type]}</div>
-                  {row.notes && (
-                    <div className="mt-0.5 text-xs text-muted-foreground">
-                      {row.notes}
-                    </div>
-                  )}
-                  <div className="mt-1 space-y-0.5 text-xs text-muted-foreground md:hidden">
-                    <div>Період: {formatPeriod(row.period_km, row.period_days)}</div>
-                    {row.last_completed_at && (
-                      <div>
-                        Виконано: {formatDate(row.last_completed_at)}
-                        {row.last_odometer != null
-                          ? ` · ${formatNumber(row.last_odometer)} км`
-                          : ""}
-                      </div>
-                    )}
-                    <div>
-                      Залишок:{" "}
-                      {formatRemaining(row.remaining_km, row.remaining_days, row.status)}
-                    </div>
-                  </div>
-                </td>
-                <td className="hidden tabular-nums md:table-cell">
-                  {formatPeriod(row.period_km, row.period_days)}
-                </td>
-                <td className="hidden text-muted-foreground tabular-nums md:table-cell">
-                  {row.last_completed_at ? formatDate(row.last_completed_at) : "—"}
-                </td>
-                <td className="hidden text-right tabular-nums md:table-cell">
-                  {row.last_odometer != null
-                    ? `${formatNumber(row.last_odometer)} км`
-                    : "—"}
-                </td>
-                <td className="hidden text-right tabular-nums md:table-cell">
-                  <span className={remainingTone(row)}>
-                    {formatRemaining(row.remaining_km, row.remaining_days, row.status)}
-                  </span>
-                </td>
-                <td>
-                  <StatusBadge
-                    label={STATUS_LABELS[row.status]}
-                    tone={STATUS_TONES[row.status]}
-                  />
-                </td>
-                <td className="text-right">
-                  <ServiceProcedureActions
-                    procedureId={row.id}
-                    canUndo={row.records_count > 0}
-                  />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
+    <Stack spacing={2}>
+      {/* Current odometer banner */}
+      <Card variant="outlined">
+        <CardContent sx={{ py: 1.5, "&:last-child": { pb: 1.5 } }}>
+          <Stack direction="row" justifyContent="space-between" alignItems="center">
+            <Typography variant="body2" color="text.secondary">
+              Поточний пробіг авто
+            </Typography>
+            <Typography
+              variant="body2"
+              fontWeight={500}
+              sx={{ fontVariantNumeric: "tabular-nums" }}
+            >
+              {vehicleCurrentOdometer > 0
+                ? `${formatNumber(vehicleCurrentOdometer)} км`
+                : "—"}
+            </Typography>
+          </Stack>
+        </CardContent>
+      </Card>
 
-function remainingTone(row: ServiceProcedureView): string {
-  if (row.status === "overdue") return "text-destructive font-medium";
-  if (row.status === "due_soon") return "text-warning font-medium";
-  return "";
+      {/* Procedures table */}
+      <Card variant="outlined">
+        <CardContent sx={{ p: 0 }}>
+          <Box sx={{ overflowX: "auto" }}>
+            <Box
+              component="table"
+              sx={{
+                width: "100%",
+                borderCollapse: "collapse",
+                "& th": {
+                  textAlign: "left",
+                  px: 2,
+                  py: 1.5,
+                  typography: "caption",
+                  fontWeight: 600,
+                  color: "text.secondary",
+                  borderBottom: 1,
+                  borderColor: "divider",
+                  whiteSpace: "nowrap",
+                },
+                "& td": {
+                  px: 2,
+                  py: 1.5,
+                  borderBottom: 1,
+                  borderColor: "divider",
+                  verticalAlign: "top",
+                  "&:last-child": { textAlign: "right" },
+                },
+                "& tr:last-child td": {
+                  borderBottom: "none",
+                },
+              }}
+            >
+              <thead>
+                <tr>
+                  <Box component="th" scope="col">
+                    Процедура
+                  </Box>
+                  <Box
+                    component="th"
+                    scope="col"
+                    sx={{ display: { xs: "none", md: "table-cell" } }}
+                  >
+                    Період
+                  </Box>
+                  <Box
+                    component="th"
+                    scope="col"
+                    sx={{ display: { xs: "none", md: "table-cell" } }}
+                  >
+                    Останнє виконання
+                  </Box>
+                  <Box
+                    component="th"
+                    scope="col"
+                    sx={{
+                      display: { xs: "none", md: "table-cell" },
+                      textAlign: "right",
+                    }}
+                  >
+                    Пробіг
+                  </Box>
+                  <Box
+                    component="th"
+                    scope="col"
+                    sx={{
+                      display: { xs: "none", md: "table-cell" },
+                      textAlign: "right",
+                    }}
+                  >
+                    Залишок
+                  </Box>
+                  <Box component="th" scope="col">
+                    Статус
+                  </Box>
+                  <Box component="th" scope="col" sx={{ textAlign: "right" }}>
+                    Дії
+                  </Box>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row) => (
+                  <tr key={row.id}>
+                    {/* Procedure name + mobile-compressed details */}
+                    <Box component="td">
+                      <Typography variant="body2" fontWeight={500}>
+                        {VEHICLE_DOCUMENT_TYPE_LABELS[row.type]}
+                      </Typography>
+                      {row.notes && (
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          display="block"
+                        >
+                          {row.notes}
+                        </Typography>
+                      )}
+                      <Box sx={{ display: { xs: "block", md: "none" }, mt: 0.5 }}>
+                        <Typography variant="caption" color="text.secondary" display="block">
+                          Період: {formatPeriod(row.period_km, row.period_days)}
+                        </Typography>
+                        {row.last_completed_at && (
+                          <Typography variant="caption" color="text.secondary" display="block">
+                            Виконано: {formatDate(row.last_completed_at)}
+                            {row.last_odometer != null
+                              ? ` · ${formatNumber(row.last_odometer)} км`
+                              : ""}
+                          </Typography>
+                        )}
+                        <Typography
+                          variant="caption"
+                          display="block"
+                          sx={{ color: remainingColor(row.status), fontWeight: row.status === "ok" ? 400 : 500 }}
+                        >
+                          Залишок:{" "}
+                          {formatRemaining(row.remaining_km, row.remaining_days, row.status)}
+                        </Typography>
+                      </Box>
+                    </Box>
+
+                    {/* Period */}
+                    <Box
+                      component="td"
+                      sx={{ display: { xs: "none", md: "table-cell" } }}
+                    >
+                      <Typography
+                        variant="body2"
+                        sx={{ fontVariantNumeric: "tabular-nums" }}
+                      >
+                        {formatPeriod(row.period_km, row.period_days)}
+                      </Typography>
+                    </Box>
+
+                    {/* Last completed */}
+                    <Box
+                      component="td"
+                      sx={{ display: { xs: "none", md: "table-cell" } }}
+                    >
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ fontVariantNumeric: "tabular-nums" }}
+                      >
+                        {row.last_completed_at
+                          ? formatDate(row.last_completed_at)
+                          : "—"}
+                      </Typography>
+                    </Box>
+
+                    {/* Last odometer */}
+                    <Box
+                      component="td"
+                      sx={{
+                        display: { xs: "none", md: "table-cell" },
+                        textAlign: "right",
+                      }}
+                    >
+                      <Typography
+                        variant="body2"
+                        sx={{ fontVariantNumeric: "tabular-nums" }}
+                      >
+                        {row.last_odometer != null
+                          ? `${formatNumber(row.last_odometer)} км`
+                          : "—"}
+                      </Typography>
+                    </Box>
+
+                    {/* Remaining */}
+                    <Box
+                      component="td"
+                      sx={{
+                        display: { xs: "none", md: "table-cell" },
+                        textAlign: "right",
+                      }}
+                    >
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          fontVariantNumeric: "tabular-nums",
+                          color: remainingColor(row.status),
+                          fontWeight:
+                            row.status === "overdue" || row.status === "due_soon"
+                              ? 500
+                              : 400,
+                        }}
+                      >
+                        {formatRemaining(
+                          row.remaining_km,
+                          row.remaining_days,
+                          row.status,
+                        )}
+                      </Typography>
+                    </Box>
+
+                    {/* Status chip */}
+                    <Box component="td">
+                      <Chip
+                        label={STATUS_LABELS[row.status]}
+                        size="small"
+                        color={STATUS_MUI_COLORS[row.status]}
+                        variant="filled"
+                        sx={{ fontWeight: 500 }}
+                      />
+                    </Box>
+
+                    {/* Actions */}
+                    <Box component="td">
+                      <ServiceProcedureActions
+                        procedureId={row.id}
+                        canUndo={row.records_count > 0}
+                      />
+                    </Box>
+                  </tr>
+                ))}
+              </tbody>
+            </Box>
+          </Box>
+        </CardContent>
+      </Card>
+    </Stack>
+  );
 }

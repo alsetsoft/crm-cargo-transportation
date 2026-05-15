@@ -1,17 +1,21 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
-import { toast } from "sonner";
+
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import Stack from "@mui/material/Stack";
 
 import { createOrderAction, updateOrderAction } from "@/actions/orders";
-import { Button } from "@/components/ui/button";
+import { LinkBehavior } from "@/components/crm/link-behavior";
 import type { OrderExpenseRow, OrderRow } from "@/lib/data/orders";
+import { toast } from "@/lib/toast";
 import type { OrderInput } from "@/lib/validation/order";
 
 import {
-  Form,
   OrderFormBody,
   useOrderForm,
   type ClientOption,
@@ -58,32 +62,57 @@ export function OrderFormPage(props: OrderFormPageProps) {
   };
 
   return (
-    <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        className="panel-card space-y-6 p-5 sm:p-6"
-      >
-        <OrderFormBody
-          form={form}
-          expensesField={expensesField}
-          preview={preview}
-          clients={props.clients}
-          drivers={props.drivers}
-          vehicles={props.vehicles}
-        />
-        <div className="flex justify-end gap-2 border-t border-border/60 pt-4">
-          <Button type="button" variant="outline" asChild disabled={isPending}>
-            <Link href="/orders">Скасувати</Link>
-          </Button>
-          <Button type="submit" disabled={isPending}>
-            {isPending
-              ? "Збереження..."
-              : props.mode === "create"
-                ? "Створити"
-                : "Зберегти"}
-          </Button>
-        </div>
-      </form>
-    </Form>
+    <Card>
+      <CardContent>
+        <Box
+          component="form"
+          onSubmit={form.handleSubmit(onSubmit)}
+          sx={{ display: "grid", gap: 0 }}
+        >
+          <OrderFormBody
+            form={form}
+            expensesField={expensesField}
+            preview={preview}
+            clients={props.clients}
+            drivers={props.drivers}
+            vehicles={props.vehicles}
+          />
+
+          {/* Action bar */}
+          <Stack
+            direction="row"
+            justifyContent="flex-end"
+            spacing={1.5}
+            sx={{
+              borderTop: 1,
+              borderColor: "divider",
+              pt: 2.5,
+              mt: 3,
+            }}
+          >
+            <Button
+              component={LinkBehavior}
+              href="/orders"
+              variant="outlined"
+              disabled={isPending}
+            >
+              Скасувати
+            </Button>
+            <Button
+              type="submit"
+              variant="contained"
+              size="large"
+              disabled={isPending}
+            >
+              {isPending
+                ? "Збереження..."
+                : props.mode === "create"
+                  ? "Створити"
+                  : "Зберегти"}
+            </Button>
+          </Stack>
+        </Box>
+      </CardContent>
+    </Card>
   );
 }

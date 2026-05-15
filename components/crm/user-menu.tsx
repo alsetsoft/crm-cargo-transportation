@@ -1,18 +1,15 @@
 "use client";
 
+import Avatar from "@mui/material/Avatar";
+import Divider from "@mui/material/Divider";
+import IconButton from "@mui/material/IconButton";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import Typography from "@mui/material/Typography";
 import { LogOut, UserRound } from "lucide-react";
-import { useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 
 import { signOutAction } from "@/actions/auth";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 type UserMenuProps = {
   email: string;
@@ -21,53 +18,123 @@ type UserMenuProps = {
 };
 
 export function UserMenu({ email, fullName, role }: UserMenuProps) {
+  const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
   const [isPending, startTransition] = useTransition();
+  const buttonRef = useRef<HTMLButtonElement>(null);
+
+  const open = Boolean(anchorEl);
+  const displayName = fullName?.trim() || email;
+  const initial = (displayName.match(/[\p{L}\p{N}]/u)?.[0] ?? "?").toUpperCase();
+
+  const handleOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
 
   const onSignOut = () => {
+    handleClose();
     startTransition(async () => {
       await signOutAction();
     });
   };
 
-  const displayName = fullName?.trim() || email;
-  const initials = (displayName.match(/[\p{L}\p{N}]/u)?.[0] ?? "?").toUpperCase();
-
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-9 gap-2 rounded-md pr-3 pl-2"
-        >
-          <span className="flex size-6 items-center justify-center rounded-full bg-primary text-xs font-medium text-primary-foreground">
-            {initials}
-          </span>
-          <span className="hidden text-sm sm:inline">{displayName}</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel>
-          <div className="flex flex-col gap-0.5">
-            <span className="truncate text-sm font-medium">{displayName}</span>
-            <span className="truncate text-xs text-muted-foreground">{email}</span>
-            <span className="mt-1 inline-flex items-center gap-1 text-[11px] text-muted-foreground">
-              <UserRound className="size-3" /> {role}
-            </span>
-          </div>
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          onSelect={(event) => {
-            event.preventDefault();
-            onSignOut();
+    <>
+      <IconButton
+        ref={buttonRef}
+        onClick={handleOpen}
+        aria-controls={open ? "user-menu" : undefined}
+        aria-haspopup="true"
+        aria-expanded={open ? "true" : undefined}
+        aria-label="меню користувача"
+        sx={{ p: 1 }}
+      >
+        <Avatar
+          sx={{
+            bgcolor: "primary.main",
+            width: 32,
+            height: 32,
+            fontSize: "0.8125rem",
+            fontWeight: 600,
           }}
-          disabled={isPending}
         >
-          <LogOut className="size-4" />
-          <span>{isPending ? "Вихід..." : "Вийти"}</span>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+          {initial}
+        </Avatar>
+      </IconButton>
+
+      <Menu
+        id="user-menu"
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleClose}
+        transformOrigin={{ horizontal: "right", vertical: "top" }}
+        anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+        slotProps={{
+          paper: {
+            elevation: 2,
+            sx: { mt: 0.5, minWidth: 224 },
+          },
+        }}
+      >
+        {/* User info header — disabled, no hover */}
+        <MenuItem
+          disabled
+          disableRipple
+          sx={{
+            "&.Mui-disabled": { opacity: 1 },
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-start",
+            gap: 0.25,
+            py: 1.5,
+            cursor: "default",
+          }}
+        >
+          <Typography
+            variant="subtitle2"
+            noWrap
+            sx={{ fontWeight: 600, color: "text.primary", maxWidth: 192 }}
+          >
+            {displayName}
+          </Typography>
+          <Typography
+            variant="caption"
+            noWrap
+            sx={{ color: "text.secondary", maxWidth: 192, display: "block" }}
+          >
+            {email}
+          </Typography>
+          <Typography
+            variant="caption"
+            sx={{
+              mt: 0.5,
+              display: "flex",
+              alignItems: "center",
+              gap: 0.5,
+              color: "text.secondary",
+            }}
+          >
+            <UserRound size={12} />
+            {role}
+          </Typography>
+        </MenuItem>
+
+        <Divider />
+
+        <MenuItem
+          onClick={onSignOut}
+          disabled={isPending}
+          sx={{ gap: 1.5, color: "error.main" }}
+        >
+          <LogOut size={16} />
+          <Typography variant="body2">
+            {isPending ? "Вихід..." : "Вийти"}
+          </Typography>
+        </MenuItem>
+      </Menu>
+    </>
   );
 }

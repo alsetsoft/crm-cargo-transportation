@@ -1,21 +1,11 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useTransition } from "react";
+import Button from "@mui/material/Button";
+import IconButton from "@mui/material/IconButton";
 import { Trash2 } from "lucide-react";
-import { toast } from "sonner";
 
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
+import { toast } from "@/lib/toast";
 
 type ConfirmDeleteDialogProps = {
   title: string;
@@ -26,6 +16,18 @@ type ConfirmDeleteDialogProps = {
   triggerVariant?: "destructive" | "ghost" | "outline";
 };
 
+// Map the legacy shadcn triggerVariant to MUI Button variant
+type MuiVariant = "contained" | "text" | "outlined";
+
+const TRIGGER_VARIANT_MAP: Record<
+  NonNullable<ConfirmDeleteDialogProps["triggerVariant"]>,
+  MuiVariant
+> = {
+  destructive: "contained",
+  ghost: "text",
+  outline: "outlined",
+};
+
 export function ConfirmDeleteDialog({
   title,
   description,
@@ -34,54 +36,43 @@ export function ConfirmDeleteDialog({
   triggerLabel,
   triggerVariant = "ghost",
 }: ConfirmDeleteDialogProps) {
-  const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
-  const handleConfirm = () => {
+  const handleClick = () => {
+    if (!window.confirm(`${title}\n\n${description}`)) return;
     startTransition(async () => {
       const result = await action(id);
       if (result.ok) {
         toast.success("Запис видалено");
-        setOpen(false);
       } else {
         toast.error(result.error ?? "Не вдалося видалити запис");
       }
     });
   };
 
+  if (triggerLabel) {
+    return (
+      <Button
+        color="error"
+        variant={TRIGGER_VARIANT_MAP[triggerVariant]}
+        startIcon={<Trash2 size={16} />}
+        onClick={handleClick}
+        disabled={isPending}
+      >
+        {triggerLabel}
+      </Button>
+    );
+  }
+
   return (
-    <AlertDialog open={open} onOpenChange={setOpen}>
-      <AlertDialogTrigger asChild>
-        <Button variant={triggerVariant} size="icon-sm" aria-label="Видалити">
-          {triggerLabel ? (
-            <>
-              <Trash2 className="size-4" />
-              <span>{triggerLabel}</span>
-            </>
-          ) : (
-            <Trash2 className="size-4 text-destructive" />
-          )}
-        </Button>
-      </AlertDialogTrigger>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>{title}</AlertDialogTitle>
-          <AlertDialogDescription>{description}</AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel disabled={isPending}>Скасувати</AlertDialogCancel>
-          <AlertDialogAction
-            onClick={(e) => {
-              e.preventDefault();
-              handleConfirm();
-            }}
-            disabled={isPending}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-          >
-            {isPending ? "Видалення..." : "Видалити"}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <IconButton
+      aria-label="Видалити"
+      color="error"
+      onClick={handleClick}
+      disabled={isPending}
+      sx={{ p: 1.5 }}
+    >
+      <Trash2 size={18} />
+    </IconButton>
   );
 }

@@ -1,8 +1,8 @@
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
+import Button from "@mui/material/Button";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import type { ReactNode } from "react";
-
-import { Button } from "@/components/ui/button";
 
 type PageHeaderProps = {
   title: string;
@@ -18,19 +18,32 @@ export function PageHeader({
   actions,
 }: PageHeaderProps) {
   return (
-    <section className="flex flex-wrap items-center justify-between gap-3">
-      <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
+    <Stack
+      direction="row"
+      alignItems="center"
+      justifyContent="space-between"
+      flexWrap="wrap"
+      spacing={2}
+    >
+      <Typography
+        variant="h5"
+        component="h1"
+        sx={{ minWidth: 0, flex: 1, wordBreak: "break-word" }}
+      >
         {title}
-      </h1>
-      <div className="flex flex-wrap items-center gap-2">
+      </Typography>
+
+      <Stack direction="row" alignItems="center" spacing={1} flexWrap="wrap">
         {actions}
-        <Button variant="outline" size="sm" asChild>
-          <Link href={backHref}>
-            <ArrowLeft className="size-4" />
-            {backLabel}
-          </Link>
+        <Button
+          href={backHref}
+          variant="outlined"
+          size="medium"
+          startIcon={<ArrowBackIcon />}
+        >
+          {backLabel}
         </Button>
-      </div>
-    </section>
+      </Stack>
+    </Stack>
   );
 }

@@ -84,3 +84,24 @@ export const VEHICLE_DOCUMENT_TYPE_LABELS: Record<VehicleDocumentType, string> =
   technical_inspection: "ТО",
   tachograph: "ТАХО",
 };
+
+// ---------------------------------------------------------------------------
+// MUI color mapping — single source of truth used by StatusBadge and KpiCard
+// ---------------------------------------------------------------------------
+export type MuiColor =
+  | "success"
+  | "warning"
+  | "info"
+  | "error"
+  | "default"
+  | "primary"
+  | "secondary";
+
+export const TONE_TO_MUI_COLOR: Record<BadgeTone, MuiColor> = {
+  success: "success",
+  warning: "warning",
+  info: "info",
+  destructive: "error",
+  secondary: "secondary",
+  default: "primary",
+};

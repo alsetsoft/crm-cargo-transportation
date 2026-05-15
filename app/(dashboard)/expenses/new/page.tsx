@@ -1,3 +1,5 @@
+import Stack from "@mui/material/Stack";
+
 import { PageHeader } from "@/components/crm/page-header";
 import { listOrders } from "@/lib/data/orders";
 
@@ -14,9 +16,9 @@ export default async function NewExpensePage() {
   }));
 
   return (
-    <>
+    <Stack spacing={3}>
       <PageHeader title="Нова витрата" backHref="/expenses" backLabel="До реєстру" />
       <ExpenseFormPage mode="create" orderOptions={orderOptions} />
-    </>
+    </Stack>
   );
 }
