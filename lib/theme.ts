@@ -1,5 +1,9 @@
 import { alpha, createTheme } from "@mui/material/styles";
 
+// Side-effect import: registers MuiDataGrid in the MUI theme component map
+// so `components.MuiDataGrid` below is typed correctly and picked up.
+import type {} from "@mui/x-data-grid/themeAugmentation";
+
 // ---------------------------------------------------------------------------
 // Brand palette — derived from the M3 seed colour that matches the Tailwind
 // design token `--sidebar-primary: oklch(0.53 0.13 201)` (≈ #1097B3 teal).
@@ -296,6 +300,37 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: "8px 8px 0 0",
+        },
+      },
+    },
+
+    // DataGrid: rows auto-grow to fit content and cells have consistent
+    // vertical padding so single-line and multi-line cells visually line
+    // up across the row instead of one column appearing centered while
+    // another (with two-line content) appears shifted.
+    MuiDataGrid: {
+      defaultProps: {
+        getRowHeight: () => "auto",
+      },
+      styleOverrides: {
+        root: {
+          border: "none",
+          // Vertical breathing room when rows auto-size. align-items:center
+          // stays the default — the per-cell padding keeps the visual
+          // centerline stable whether content is one line or several.
+          "& .MuiDataGrid-cell": {
+            paddingTop: 10,
+            paddingBottom: 10,
+            // The cell flex container is row-direction; ensure renderCell
+            // content (whether a Stack or a single Typography) anchors at
+            // the cell's vertical middle.
+            alignItems: "center",
+          },
+          // Header row keeps fixed height — only data rows auto-size.
+          "& .MuiDataGrid-columnHeader": {
+            paddingTop: 0,
+            paddingBottom: 0,
+          },
         },
       },
     },

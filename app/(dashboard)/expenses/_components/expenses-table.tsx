@@ -66,7 +66,7 @@ export function ExpensesTable({ rows }: ExpensesTableProps) {
       flex: 1,
       minWidth: 160,
       renderCell: ({ row }) => (
-        <Stack spacing={0.25} sx={{ py: 0.5 }}>
+        <Stack spacing={0.25}>
           <Stack direction="row" spacing={1} alignItems="center">
             <Typography variant="body2" fontWeight={500}>
               {row.name}
@@ -101,7 +101,7 @@ export function ExpensesTable({ rows }: ExpensesTableProps) {
       sortable: false,
       renderCell: ({ row }) =>
         row.order_number ? (
-          <Stack spacing={0.25} sx={{ py: 0.5 }}>
+          <Stack spacing={0.25}>
             <Typography
               variant="body2"
               sx={{ fontFamily: "monospace" }}
@@ -265,7 +265,6 @@ export function ExpensesTable({ rows }: ExpensesTableProps) {
                   sortModel: [{ field: "spent_at", sort: "desc" }],
                 },
               }}
-              sx={{ border: "none" }}
             />
           </Box>
         </CardContent>

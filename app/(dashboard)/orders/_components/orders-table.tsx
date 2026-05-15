@@ -90,7 +90,7 @@ export function OrdersTable({ rows }: OrdersTableProps) {
       flex: 1,
       minWidth: 160,
       renderCell: ({ row }) => (
-        <Stack spacing={0.25} sx={{ py: 0.5 }}>
+        <Stack spacing={0.25}>
           <Typography variant="body2" fontWeight={500}>
             {row.client_name ?? "—"}
           </Typography>
@@ -452,7 +452,6 @@ export function OrdersTable({ rows }: OrdersTableProps) {
                 paginationModel: { pageSize: 25 },
               },
             }}
-            sx={{ border: "none" }}
           />
         </Box>
       </CardContent>

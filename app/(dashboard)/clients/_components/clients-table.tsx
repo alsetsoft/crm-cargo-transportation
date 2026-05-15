@@ -70,7 +70,7 @@ export function ClientsTable({ rows }: ClientsTableProps) {
       flex: 1,
       minWidth: 160,
       renderCell: ({ row }) => (
-        <Stack spacing={0.25} sx={{ py: 0.5 }}>
+        <Stack spacing={0.25}>
           <Link
             component={LinkBehavior}
             href={`/clients/${row.id}`}
@@ -238,7 +238,6 @@ export function ClientsTable({ rows }: ClientsTableProps) {
                 paginationModel: { pageSize: 25 },
               },
             }}
-            sx={{ border: "none" }}
           />
         </Box>
       </CardContent>

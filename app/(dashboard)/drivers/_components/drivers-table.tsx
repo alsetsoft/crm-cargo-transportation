@@ -56,7 +56,7 @@ export function DriversTable({ rows }: DriversTableProps) {
       flex: 1,
       minWidth: 160,
       renderCell: ({ row }) => (
-        <Stack spacing={0.25} sx={{ py: 0.5 }}>
+        <Stack spacing={0.25}>
           <Link
             component={LinkBehavior}
             href={`/drivers/${row.id}`}
@@ -267,7 +267,6 @@ export function DriversTable({ rows }: DriversTableProps) {
                 paginationModel: { pageSize: 25 },
               },
             }}
-            sx={{ border: "none" }}
           />
         </Box>
       </CardContent>

@@ -175,7 +175,6 @@ export function LogsTable({ rows }: LogsTableProps) {
                 sortModel: [{ field: "created_at", sort: "desc" }],
               },
             }}
-            sx={{ border: "none" }}
           />
         </Box>
       </CardContent>

@@ -54,7 +54,7 @@ export function VehiclesTable({ rows }: VehiclesTableProps) {
       flex: 1,
       minWidth: 160,
       renderCell: ({ row }) => (
-        <Stack spacing={0.25} sx={{ py: 0.5 }}>
+        <Stack spacing={0.25}>
           <Typography variant="body2" fontWeight={500} color="text.primary">
             {row.unit}
           </Typography>
@@ -244,7 +244,6 @@ export function VehiclesTable({ rows }: VehiclesTableProps) {
                 paginationModel: { pageSize: 25 },
               },
             }}
-            sx={{ border: "none" }}
           />
         </Box>
       </CardContent>
