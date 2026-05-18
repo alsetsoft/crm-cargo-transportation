@@ -181,7 +181,7 @@ export function VehiclesTable({ rows }: VehiclesTableProps) {
       headerAlign: "right",
       renderCell: ({ row }) => (
         <Stack direction="row" justifyContent="flex-end" alignItems="center">
-          {!isMobile && row.id && (
+          {row.id && (
             <IconButton
               component={LinkBehavior}
               href={`/vehicles/${row.id}/service-book`}

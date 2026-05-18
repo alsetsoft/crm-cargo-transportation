@@ -337,6 +337,8 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          insurance_end_date: string | null
+          insurance_start_date: string | null
           notes: string | null
           period_days: number | null
           period_km: number | null
@@ -347,6 +349,8 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          insurance_end_date?: string | null
+          insurance_start_date?: string | null
           notes?: string | null
           period_days?: number | null
           period_km?: number | null
@@ -357,6 +361,8 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          insurance_end_date?: string | null
+          insurance_start_date?: string | null
           notes?: string | null
           period_days?: number | null
           period_km?: number | null
@@ -766,9 +772,6 @@ export type Enums<
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
     ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
     : never
-
-export type Views<T extends keyof Database["public"]["Views"]> =
-  Database["public"]["Views"][T]["Row"]
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends

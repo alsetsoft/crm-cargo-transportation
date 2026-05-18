@@ -51,13 +51,20 @@ export async function createServiceProcedureAction(
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Невірні дані" };
   }
   const supabase = await createClient();
+  const isInsurance = parsed.data.type === "insurance";
   const { data, error } = await supabase
     .from("vehicle_service_procedures")
     .insert({
       vehicle_id: vehicleId,
       type: parsed.data.type,
-      period_km: parsed.data.period_km ?? null,
-      period_days: parsed.data.period_days ?? null,
+      period_km: isInsurance ? null : (parsed.data.period_km ?? null),
+      period_days: isInsurance ? null : (parsed.data.period_days ?? null),
+      insurance_start_date: isInsurance
+        ? (parsed.data.insurance_start_date ?? null)
+        : null,
+      insurance_end_date: isInsurance
+        ? (parsed.data.insurance_end_date ?? null)
+        : null,
       notes: parsed.data.notes ?? null,
     })
     .select("id")

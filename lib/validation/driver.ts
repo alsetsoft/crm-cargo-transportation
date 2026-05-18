@@ -13,11 +13,6 @@ const optionalUuid = z
   .or(z.literal("").transform(() => undefined))
   .or(z.literal("none").transform(() => undefined));
 
-const optionalRating = z.preprocess(
-  (v) => (v === "" || v == null ? undefined : Number(v)),
-  z.number().min(0).max(5).optional(),
-);
-
 const commission = z.preprocess(
   (v) => (v === "" || v == null ? 0 : Number(v)),
   z.number().min(0).max(1e6),
@@ -34,7 +29,6 @@ export const driverInputSchema = z.object({
     .or(z.literal("").transform(() => undefined)),
   current_vehicle_id: optionalUuid,
   status: driverStatusEnum.default("available"),
-  rating: optionalRating,
   commission_per_km_uah: commission.default(0),
   notes: optionalString,
 });

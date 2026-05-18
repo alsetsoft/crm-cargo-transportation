@@ -62,7 +62,7 @@ export const VEHICLE_STATUS_TONES: Record<VehicleStatus, BadgeTone> = {
 
 export const PAYMENT_FORM_LABELS: Record<PaymentForm, string> = {
   cash: "Готівка",
-  bank_transfer: "Безготівка",
+  bank_transfer: "Безготівкова",
   card: "Картка",
 };
 

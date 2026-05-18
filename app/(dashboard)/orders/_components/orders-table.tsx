@@ -37,6 +37,37 @@ type OrdersTableProps = {
   rows: OrderWithMetrics[];
 };
 
+// In MUI X v7 auto-height mode (`getRowHeight: () => 'auto'`) cells are
+// rendered with `align-items: flex-start`, so taller content (e.g. the
+// actions IconButton stack) sits at the cell top while shorter Typography
+// cells render at their own geometric center — making action icons appear
+// below the surrounding row data. Theme overrides lose the specificity
+// battle, so each renderCell wraps its content in this Box, which uses
+// `alignSelf: stretch` to fill the row's height and centers its child
+// vertically with `alignItems: center`.
+type CellRowAlign = "left" | "right";
+function CellRow({
+  children,
+  align = "left",
+}: {
+  children: React.ReactNode;
+  align?: CellRowAlign;
+}) {
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        alignSelf: "stretch",
+        width: "100%",
+        justifyContent: align === "right" ? "flex-end" : "flex-start",
+      }}
+    >
+      {children}
+    </Box>
+  );
+}
+
 function formatRoute(
   loading: string | null | undefined,
   unloading: string | null | undefined,
@@ -76,12 +107,14 @@ export function OrdersTable({ rows }: OrdersTableProps) {
       headerName: "№",
       width: 90,
       renderCell: ({ value }) => (
-        <Typography
-          variant="body2"
-          sx={{ fontFamily: "monospace", color: "text.secondary" }}
-        >
-          {value}
-        </Typography>
+        <CellRow>
+          <Typography
+            variant="body2"
+            sx={{ fontFamily: "monospace", color: "text.secondary" }}
+          >
+            {value}
+          </Typography>
+        </CellRow>
       ),
     },
     {
@@ -90,22 +123,24 @@ export function OrdersTable({ rows }: OrdersTableProps) {
       flex: 1,
       minWidth: 160,
       renderCell: ({ row }) => (
-        <Stack spacing={0.25}>
-          <Typography variant="body2" fontWeight={500}>
-            {row.client_name ?? "—"}
-          </Typography>
-          {row.client_code && (
-            <Typography variant="caption" color="text.secondary">
-              {row.client_code}
+        <CellRow>
+          <Stack spacing={0.25}>
+            <Typography variant="body2" fontWeight={500}>
+              {row.client_name ?? "—"}
             </Typography>
-          )}
-          {isMobile && (
-            <Typography variant="caption" color="text.secondary">
-              {formatRoute(row.loading_place, row.unloading_place)}
-              {row.driver_full_name ? ` · ${row.driver_full_name}` : ""}
-            </Typography>
-          )}
-        </Stack>
+            {row.client_code && (
+              <Typography variant="caption" color="text.secondary">
+                {row.client_code}
+              </Typography>
+            )}
+            {isMobile && (
+              <Typography variant="caption" color="text.secondary">
+                {formatRoute(row.loading_place, row.unloading_place)}
+                {row.driver_full_name ? ` · ${row.driver_full_name}` : ""}
+              </Typography>
+            )}
+          </Stack>
+        </CellRow>
       ),
     },
     {
@@ -116,9 +151,11 @@ export function OrdersTable({ rows }: OrdersTableProps) {
       sortable: false,
       filterable: false,
       renderCell: ({ row }) => (
-        <Typography variant="body2" color="text.secondary">
-          {formatRoute(row.loading_place, row.unloading_place)}
-        </Typography>
+        <CellRow>
+          <Typography variant="body2" color="text.secondary">
+            {formatRoute(row.loading_place, row.unloading_place)}
+          </Typography>
+        </CellRow>
       ),
     },
     {
@@ -126,7 +163,9 @@ export function OrdersTable({ rows }: OrdersTableProps) {
       headerName: "Водій",
       width: 160,
       renderCell: ({ value }) => (
-        <Typography variant="body2">{value ?? "—"}</Typography>
+        <CellRow>
+          <Typography variant="body2">{value ?? "—"}</Typography>
+        </CellRow>
       ),
     },
     {
@@ -137,21 +176,22 @@ export function OrdersTable({ rows }: OrdersTableProps) {
       filterable: false,
       renderCell: ({ row }) =>
         row.vehicle_plate ? (
-          <Stack spacing={0}>
-            <Typography
-              variant="body2"
-              sx={{ fontFamily: "monospace" }}
-            >
-              {row.vehicle_plate}
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              {row.vehicle_unit}
-            </Typography>
-          </Stack>
+          <CellRow>
+            <Stack spacing={0}>
+              <Typography variant="body2" sx={{ fontFamily: "monospace" }}>
+                {row.vehicle_plate}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                {row.vehicle_unit}
+              </Typography>
+            </Stack>
+          </CellRow>
         ) : (
-          <Typography variant="body2" color="text.secondary">
-            —
-          </Typography>
+          <CellRow>
+            <Typography variant="body2" color="text.secondary">
+              —
+            </Typography>
+          </CellRow>
         ),
     },
     {
@@ -162,9 +202,14 @@ export function OrdersTable({ rows }: OrdersTableProps) {
       align: "right",
       headerAlign: "right",
       renderCell: ({ value }) => (
-        <Typography variant="body2" sx={{ fontVariantNumeric: "tabular-nums" }}>
-          {value != null ? `${formatNumber(value, 1)} км` : "—"}
-        </Typography>
+        <CellRow align="right">
+          <Typography
+            variant="body2"
+            sx={{ fontVariantNumeric: "tabular-nums" }}
+          >
+            {value != null ? `${formatNumber(value, 1)} км` : "—"}
+          </Typography>
+        </CellRow>
       ),
     },
     {
@@ -175,9 +220,14 @@ export function OrdersTable({ rows }: OrdersTableProps) {
       align: "right",
       headerAlign: "right",
       renderCell: ({ value }) => (
-        <Typography variant="body2" sx={{ fontVariantNumeric: "tabular-nums" }}>
-          {formatUah(value)}
-        </Typography>
+        <CellRow align="right">
+          <Typography
+            variant="body2"
+            sx={{ fontVariantNumeric: "tabular-nums" }}
+          >
+            {formatUah(value)}
+          </Typography>
+        </CellRow>
       ),
     },
     {
@@ -188,9 +238,14 @@ export function OrdersTable({ rows }: OrdersTableProps) {
       align: "right",
       headerAlign: "right",
       renderCell: ({ value }) => (
-        <Typography variant="body2" sx={{ fontVariantNumeric: "tabular-nums" }}>
-          {formatUah(value)}
-        </Typography>
+        <CellRow align="right">
+          <Typography
+            variant="body2"
+            sx={{ fontVariantNumeric: "tabular-nums" }}
+          >
+            {formatUah(value)}
+          </Typography>
+        </CellRow>
       ),
     },
     {
@@ -202,10 +257,12 @@ export function OrdersTable({ rows }: OrdersTableProps) {
         const ps = value as PaymentStatus | null;
         if (!ps) return null;
         return (
-          <StatusBadge
-            label={PAYMENT_STATUS_LABELS[ps]}
-            tone={PAYMENT_STATUS_TONES[ps]}
-          />
+          <CellRow>
+            <StatusBadge
+              label={PAYMENT_STATUS_LABELS[ps]}
+              tone={PAYMENT_STATUS_TONES[ps]}
+            />
+          </CellRow>
         );
       },
     },
@@ -217,9 +274,14 @@ export function OrdersTable({ rows }: OrdersTableProps) {
       align: "right",
       headerAlign: "right",
       renderCell: ({ value }) => (
-        <Typography variant="body2" sx={{ fontVariantNumeric: "tabular-nums" }}>
-          {formatUah(value)}
-        </Typography>
+        <CellRow align="right">
+          <Typography
+            variant="body2"
+            sx={{ fontVariantNumeric: "tabular-nums" }}
+          >
+            {formatUah(value)}
+          </Typography>
+        </CellRow>
       ),
     },
     {
@@ -238,12 +300,18 @@ export function OrdersTable({ rows }: OrdersTableProps) {
           else color = "warning.main";
         }
         return (
-          <Typography
-            variant="body2"
-            sx={{ fontVariantNumeric: "tabular-nums", color, fontWeight: pct != null && pct >= 15 ? 500 : 400 }}
-          >
-            {formatPercent(pct)}
-          </Typography>
+          <CellRow align="right">
+            <Typography
+              variant="body2"
+              sx={{
+                fontVariantNumeric: "tabular-nums",
+                color,
+                fontWeight: pct != null && pct >= 15 ? 500 : 400,
+              }}
+            >
+              {formatPercent(pct)}
+            </Typography>
+          </CellRow>
         );
       },
     },
@@ -255,9 +323,14 @@ export function OrdersTable({ rows }: OrdersTableProps) {
       align: "right",
       headerAlign: "right",
       renderCell: ({ value }) => (
-        <Typography variant="body2" sx={{ fontVariantNumeric: "tabular-nums" }}>
-          {formatUah(value)}
-        </Typography>
+        <CellRow align="right">
+          <Typography
+            variant="body2"
+            sx={{ fontVariantNumeric: "tabular-nums" }}
+          >
+            {formatUah(value)}
+          </Typography>
+        </CellRow>
       ),
     },
     {
@@ -269,10 +342,12 @@ export function OrdersTable({ rows }: OrdersTableProps) {
         const s = value as OrderStatus | null;
         if (!s) return null;
         return (
-          <StatusBadge
-            label={ORDER_STATUS_LABELS[s]}
-            tone={ORDER_STATUS_TONES[s]}
-          />
+          <CellRow>
+            <StatusBadge
+              label={ORDER_STATUS_LABELS[s]}
+              tone={ORDER_STATUS_TONES[s]}
+            />
+          </CellRow>
         );
       },
     },
@@ -285,23 +360,25 @@ export function OrdersTable({ rows }: OrdersTableProps) {
       align: "right",
       headerAlign: "right",
       renderCell: ({ row }) => (
-        <Stack direction="row" justifyContent="flex-end" alignItems="center">
-          {row.id && (
-            <IconButton
-              component={LinkBehavior}
-              href={`/orders/${row.id}/edit`}
-              aria-label="Редагувати"
-            >
-              <Pencil size={18} />
-            </IconButton>
-          )}
-          <ConfirmDeleteDialog
-            title="Видалити замовлення?"
-            description={`Замовлення №${row.number} буде видалено.`}
-            action={deleteOrderAction}
-            id={row.id!}
-          />
-        </Stack>
+        <CellRow>
+          <Stack direction="row" alignItems="center">
+            {row.id && (
+              <IconButton
+                component={LinkBehavior}
+                href={`/orders/${row.id}/edit`}
+                aria-label="Редагувати"
+              >
+                <Pencil size={18} />
+              </IconButton>
+            )}
+            <ConfirmDeleteDialog
+              title="Видалити замовлення?"
+              description={`Замовлення №${row.number} буде видалено.`}
+              action={deleteOrderAction}
+              id={row.id!}
+            />
+          </Stack>
+        </CellRow>
       ),
     },
   ];

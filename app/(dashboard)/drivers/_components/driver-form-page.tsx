@@ -46,7 +46,6 @@ export function DriverFormPage(props: DriverFormPageProps) {
       phone: driver?.phone ?? "",
       current_vehicle_id: driver?.current_vehicle_id ?? "none",
       status: driver?.status ?? "available",
-      rating: driver?.rating ?? undefined,
       commission_per_km_uah: driver?.commission_per_km_uah ?? 0,
       notes: driver?.notes ?? "",
     },
@@ -115,7 +114,7 @@ export function DriverFormPage(props: DriverFormPageProps) {
             />
           </Stack>
 
-          {/* Row 2: current_vehicle_id + status + rating */}
+          {/* Row 2: current_vehicle_id + status */}
           <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
             <Controller
               control={control}
@@ -129,7 +128,7 @@ export function DriverFormPage(props: DriverFormPageProps) {
                   error={!!fieldState.error}
                   helperText={fieldState.error?.message}
                   fullWidth
-                  sx={{ flexGrow: { sm: 2 } }}
+                  sx={{ flexGrow: 1 }}
                   SelectProps={{ MenuProps: { disableScrollLock: true } }}
                 >
                   <MenuItem value="none">Не закріплено</MenuItem>
@@ -152,6 +151,7 @@ export function DriverFormPage(props: DriverFormPageProps) {
                   error={!!fieldState.error}
                   helperText={fieldState.error?.message}
                   fullWidth
+                  sx={{ width: { sm: 200 }, flexShrink: 0 }}
                   SelectProps={{ MenuProps: { disableScrollLock: true } }}
                 >
                   {Object.entries(DRIVER_STATUS_LABELS).map(([value, label]) => (
@@ -160,26 +160,6 @@ export function DriverFormPage(props: DriverFormPageProps) {
                     </MenuItem>
                   ))}
                 </TextField>
-              )}
-            />
-            <Controller
-              control={control}
-              name="rating"
-              render={({ field, fieldState }) => (
-                <TextField
-                  label="Рейтинг 0–5"
-                  placeholder="4.5"
-                  type="text"
-                  inputProps={{ inputMode: "decimal" }}
-                  name={field.name}
-                  inputRef={field.ref}
-                  onBlur={field.onBlur}
-                  onChange={field.onChange}
-                  value={(field.value as number | string | undefined) ?? ""}
-                  error={!!fieldState.error}
-                  helperText={fieldState.error?.message}
-                  fullWidth
-                />
               )}
             />
           </Stack>

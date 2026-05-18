@@ -44,6 +44,16 @@ function formatPeriod(km: number | null, days: number | null): string {
   return parts.join(" / ") || "—";
 }
 
+function formatInsurancePeriod(
+  startDate: string | null,
+  endDate: string | null,
+): string {
+  if (!startDate && !endDate) return "—";
+  if (startDate && endDate) return `${formatDate(startDate)} — ${formatDate(endDate)}`;
+  if (endDate) return `до ${formatDate(endDate)}`;
+  return `з ${formatDate(startDate)}`;
+}
+
 function formatRemaining(
   km: number | null,
   days: number | null,
@@ -133,7 +143,13 @@ export function ServiceBookTable({
                   borderBottom: 1,
                   borderColor: "divider",
                   verticalAlign: "top",
-                  "&:last-child": { textAlign: "right" },
+                  // Actions cell is the last column — keep its buttons
+                  // vertically centered against the multi-line row content
+                  // (matching the alignment style used elsewhere in the app).
+                  "&:last-child": {
+                    textAlign: "right",
+                    verticalAlign: "middle",
+                  },
                 },
                 "& tr:last-child td": {
                   borderBottom: "none",
@@ -206,9 +222,15 @@ export function ServiceBookTable({
                       )}
                       <Box sx={{ display: { xs: "block", md: "none" }, mt: 0.5 }}>
                         <Typography variant="caption" color="text.secondary" display="block">
-                          Період: {formatPeriod(row.period_km, row.period_days)}
+                          Період:{" "}
+                          {row.type === "insurance"
+                            ? formatInsurancePeriod(
+                                row.insurance_start_date,
+                                row.insurance_end_date,
+                              )
+                            : formatPeriod(row.period_km, row.period_days)}
                         </Typography>
-                        {row.last_completed_at && (
+                        {row.type !== "insurance" && row.last_completed_at && (
                           <Typography variant="caption" color="text.secondary" display="block">
                             Виконано: {formatDate(row.last_completed_at)}
                             {row.last_odometer != null
@@ -236,11 +258,16 @@ export function ServiceBookTable({
                         variant="body2"
                         sx={{ fontVariantNumeric: "tabular-nums" }}
                       >
-                        {formatPeriod(row.period_km, row.period_days)}
+                        {row.type === "insurance"
+                          ? formatInsurancePeriod(
+                              row.insurance_start_date,
+                              row.insurance_end_date,
+                            )
+                          : formatPeriod(row.period_km, row.period_days)}
                       </Typography>
                     </Box>
 
-                    {/* Last completed */}
+                    {/* Last completed (or insurance start date) */}
                     <Box
                       component="td"
                       sx={{ display: { xs: "none", md: "table-cell" } }}
@@ -250,9 +277,11 @@ export function ServiceBookTable({
                         color="text.secondary"
                         sx={{ fontVariantNumeric: "tabular-nums" }}
                       >
-                        {row.last_completed_at
-                          ? formatDate(row.last_completed_at)
-                          : "—"}
+                        {row.type === "insurance"
+                          ? "—"
+                          : row.last_completed_at
+                            ? formatDate(row.last_completed_at)
+                            : "—"}
                       </Typography>
                     </Box>
 

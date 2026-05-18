@@ -74,7 +74,7 @@ export function LogsTable({ rows }: LogsTableProps) {
     {
       field: "created_at",
       headerName: "Час",
-      width: 140,
+      width: 200,
       renderCell: ({ value }) => (
         <Typography
           variant="body2"

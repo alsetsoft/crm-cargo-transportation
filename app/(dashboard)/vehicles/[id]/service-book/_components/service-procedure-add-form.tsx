@@ -43,20 +43,26 @@ export function ServiceProcedureAddForm({
       type: "technical_inspection",
       period_km: undefined,
       period_days: undefined,
+      insurance_start_date: "",
+      insurance_end_date: "",
       notes: "",
     },
   });
 
-  // Insurance ("Страховка") is a calendar-only event — odometer doesn't
-  // apply. Hide the km field for that type and zero the value out so it
-  // doesn't sneak through validation.
+  // Insurance ("Страховка") is a calendar event — use start/end dates
+  // instead of period-based scheduling. For all other types we keep the
+  // period_km / period_days inputs.
   const currentType = useWatch({ control, name: "type" });
-  const isKmRelevant = currentType !== "insurance";
+  const isInsurance = currentType === "insurance";
   useEffect(() => {
-    if (!isKmRelevant) {
+    if (isInsurance) {
       setValue("period_km", undefined, { shouldValidate: true });
+      setValue("period_days", undefined, { shouldValidate: true });
+    } else {
+      setValue("insurance_start_date", "", { shouldValidate: true });
+      setValue("insurance_end_date", "", { shouldValidate: true });
     }
-  }, [isKmRelevant, setValue]);
+  }, [isInsurance, setValue]);
 
   const onSubmit = (values: ServiceProcedureInput) => {
     startTransition(async () => {
@@ -95,7 +101,7 @@ export function ServiceProcedureAddForm({
           <Stack
             direction={{ xs: "column", sm: "row" }}
             spacing={2}
-            alignItems={{ xs: "stretch", sm: "flex-start" }}
+            alignItems={{ xs: "stretch", sm: "center" }}
           >
             {/* Procedure type */}
             <Controller
@@ -123,53 +129,90 @@ export function ServiceProcedureAddForm({
               )}
             />
 
-            {/* Period km — hidden for insurance (calendar-only event) */}
-            {isKmRelevant && (
-              <Controller
-                control={control}
-                name="period_km"
-                render={({ field, fieldState }) => (
-                  <TextField
-                    label="Період, км"
-                    placeholder="10000"
-                    type="text"
-                    inputProps={{ inputMode: "numeric" }}
-                    name={field.name}
-                    ref={field.ref}
-                    onBlur={field.onBlur}
-                    onChange={field.onChange}
-                    value={(field.value as number | string | undefined) ?? ""}
-                    error={!!fieldState.error}
-                    helperText={fieldState.error?.message}
-                    fullWidth
-                    sx={{ maxWidth: { sm: 140 } }}
-                  />
-                )}
-              />
-            )}
-
-            {/* Period days */}
-            <Controller
-              control={control}
-              name="period_days"
-              render={({ field, fieldState }) => (
-                <TextField
-                  label="Період, днів"
-                  placeholder="365"
-                  type="text"
-                  inputProps={{ inputMode: "numeric" }}
-                  name={field.name}
-                  ref={field.ref}
-                  onBlur={field.onBlur}
-                  onChange={field.onChange}
-                  value={(field.value as number | string | undefined) ?? ""}
-                  error={!!fieldState.error}
-                  helperText={fieldState.error?.message}
-                  fullWidth
-                  sx={{ maxWidth: { sm: 140 } }}
+            {/* Insurance uses explicit start/end dates; other types use periodic km/days. */}
+            {isInsurance ? (
+              <>
+                <Controller
+                  control={control}
+                  name="insurance_start_date"
+                  render={({ field, fieldState }) => (
+                    <TextField
+                      {...field}
+                      value={field.value ?? ""}
+                      type="date"
+                      label="Дата страхування"
+                      InputLabelProps={{ shrink: true }}
+                      error={!!fieldState.error}
+                      helperText={fieldState.error?.message}
+                      fullWidth
+                      sx={{ maxWidth: { sm: 180 } }}
+                    />
+                  )}
                 />
-              )}
-            />
+                <Controller
+                  control={control}
+                  name="insurance_end_date"
+                  render={({ field, fieldState }) => (
+                    <TextField
+                      {...field}
+                      value={field.value ?? ""}
+                      type="date"
+                      label="Дата закінчення"
+                      InputLabelProps={{ shrink: true }}
+                      error={!!fieldState.error}
+                      helperText={fieldState.error?.message}
+                      fullWidth
+                      sx={{ maxWidth: { sm: 180 } }}
+                    />
+                  )}
+                />
+              </>
+            ) : (
+              <>
+                <Controller
+                  control={control}
+                  name="period_km"
+                  render={({ field, fieldState }) => (
+                    <TextField
+                      label="Період, км"
+                      placeholder="10000"
+                      type="text"
+                      inputProps={{ inputMode: "numeric" }}
+                      name={field.name}
+                      ref={field.ref}
+                      onBlur={field.onBlur}
+                      onChange={field.onChange}
+                      value={(field.value as number | string | undefined) ?? ""}
+                      error={!!fieldState.error}
+                      helperText={fieldState.error?.message}
+                      fullWidth
+                      sx={{ maxWidth: { sm: 140 } }}
+                    />
+                  )}
+                />
+                <Controller
+                  control={control}
+                  name="period_days"
+                  render={({ field, fieldState }) => (
+                    <TextField
+                      label="Період, днів"
+                      placeholder="365"
+                      type="text"
+                      inputProps={{ inputMode: "numeric" }}
+                      name={field.name}
+                      ref={field.ref}
+                      onBlur={field.onBlur}
+                      onChange={field.onChange}
+                      value={(field.value as number | string | undefined) ?? ""}
+                      error={!!fieldState.error}
+                      helperText={fieldState.error?.message}
+                      fullWidth
+                      sx={{ maxWidth: { sm: 140 } }}
+                    />
+                  )}
+                />
+              </>
+            )}
 
             {/* Notes */}
             <Controller
@@ -192,12 +235,11 @@ export function ServiceProcedureAddForm({
             <Stack
               direction="row"
               spacing={1}
-              sx={{ flexShrink: 0, pt: { xs: 0, sm: 1 } }}
             >
               <Button
                 type="submit"
                 variant="contained"
-                size="large"
+                size="medium"
                 disabled={isPending}
               >
                 {isPending ? "..." : "Додати"}

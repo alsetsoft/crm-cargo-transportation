@@ -304,32 +304,53 @@ const theme = createTheme({
       },
     },
 
-    // DataGrid: rows auto-grow to fit content and cells have consistent
-    // vertical padding so single-line and multi-line cells visually line
-    // up across the row instead of one column appearing centered while
-    // another (with two-line content) appears shifted.
+    // DataGrid: use a fixed row height instead of auto. In auto-height
+    // mode (`getRowHeight: () => "auto"`) MUI X v7 sets the cell's
+    // `align-items` to `flex-start`, which competes with theme/align
+    // overrides and leaves taller children (the actions IconButton stack)
+    // visually below the surrounding text. Fixed row height keeps cells
+    // at `align-items: center` natively, so single-line text, chips, and
+    // action icons all share the same horizontal centerline.
     MuiDataGrid: {
       defaultProps: {
-        getRowHeight: () => "auto",
+        // 64px comfortably fits both the action stack (~42px) and the
+        // tallest two-line cells (client_name + code, ~40px) with vertical
+        // breathing room.
+        rowHeight: 64,
+        // No per-column visibility / management UI is implemented in the app,
+        // so the default column menu (three-dot icon → Hide / Manage columns
+        // / Filter) is removed everywhere. Sorting is still accessible by
+        // clicking on a column header.
+        disableColumnMenu: true,
       },
       styleOverrides: {
         root: {
           border: "none",
-          // Vertical breathing room when rows auto-size. align-items:center
-          // stays the default — the per-cell padding keeps the visual
-          // centerline stable whether content is one line or several.
+          // The deprecated `autoHeight` DataGrid prop plus various MUI X v7
+          // internal rules can stamp `align-items: flex-start` onto cells,
+          // pushing taller children (action IconButton stacks) below the
+          // baseline of shorter Typography cells. !important forces center
+          // alignment regardless of which internal rule wins specificity.
           "& .MuiDataGrid-cell": {
-            paddingTop: 10,
-            paddingBottom: 10,
-            // The cell flex container is row-direction; ensure renderCell
-            // content (whether a Stack or a single Typography) anchors at
-            // the cell's vertical middle.
-            alignItems: "center",
+            display: "flex !important",
+            flexDirection: "row !important",
+            alignItems: "center !important",
           },
           // Header row keeps fixed height — only data rows auto-size.
           "& .MuiDataGrid-columnHeader": {
             paddingTop: 0,
             paddingBottom: 0,
+          },
+          // Suppress the default keyboard/click focus outline on column
+          // headers (and the row of cells) — the UI never relies on it
+          // and it visually competes with the column-header text + sort
+          // indicator after a click.
+          "& .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-columnHeader:focus-within":
+            {
+              outline: "none",
+            },
+          "& .MuiDataGrid-cell:focus, & .MuiDataGrid-cell:focus-within": {
+            outline: "none",
           },
         },
       },

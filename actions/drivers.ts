@@ -15,7 +15,6 @@ function buildPayload(input: DriverInput) {
     phone: input.phone ?? null,
     current_vehicle_id: input.current_vehicle_id ?? null,
     status: input.status,
-    rating: input.rating ?? null,
     commission_per_km_uah: input.commission_per_km_uah,
     notes: input.notes ?? null,
   };

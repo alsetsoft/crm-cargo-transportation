@@ -1,5 +1,5 @@
 import MuiButton from "@mui/material/Button";
-import { Pencil, Star, TrendingUp, Truck } from "lucide-react";
+import { Pencil, TrendingUp, Truck } from "lucide-react";
 import { notFound } from "next/navigation";
 
 import Card from "@mui/material/Card";
@@ -18,7 +18,7 @@ import {
 } from "@/lib/constants";
 import { getDriver, listDrivers } from "@/lib/data/drivers";
 import { listOrdersForDriver } from "@/lib/data/orders";
-import { formatNumber, formatUahPrecise } from "@/lib/format";
+import { formatUahPrecise } from "@/lib/format";
 
 import { OrdersTable } from "../../orders/_components/orders-table";
 
@@ -65,7 +65,7 @@ export default async function DriverDetailPage({ params }: PageProps) {
     >
       {/* KPI grid */}
       <Grid container spacing={2}>
-        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           <KpiCard
             label="Рейсів"
             value={String(ordersCount)}
@@ -73,17 +73,7 @@ export default async function DriverDetailPage({ params }: PageProps) {
             tone="info"
           />
         </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-          <KpiCard
-            label="Рейтинг"
-            value={
-              driver.rating != null ? formatNumber(driver.rating, 1) : "—"
-            }
-            icon={Star}
-            tone="warning"
-          />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           <KpiCard
             label="Комісія, ₴/км"
             value={

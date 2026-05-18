@@ -43,7 +43,6 @@ export function DriversTable({ rows }: DriversTableProps) {
     vehicle_unit: !isMobile,
     vehicle_plate: !isMobile,
     orders_count: !isMobile,
-    rating: !isMobile,
     commission_per_km_uah: !isMobile,
     notes: !isMobile,
     status: !isPhone,
@@ -136,19 +135,6 @@ export function DriversTable({ rows }: DriversTableProps) {
       ),
     },
     {
-      field: "rating",
-      headerName: "Рейтинг",
-      width: 100,
-      type: "number",
-      align: "right",
-      headerAlign: "right",
-      renderCell: ({ value }) => (
-        <Typography variant="body2" sx={{ fontVariantNumeric: "tabular-nums" }}>
-          {value != null ? formatNumber(value, 1) : "—"}
-        </Typography>
-      ),
-    },
-    {
       field: "commission_per_km_uah",
       headerName: "Комісія, ₴/км",
       width: 140,
@@ -204,7 +190,7 @@ export function DriversTable({ rows }: DriversTableProps) {
       headerAlign: "right",
       renderCell: ({ row }) => (
         <Stack direction="row" justifyContent="flex-end" alignItems="center">
-          {!isMobile && row.id && (
+          {row.id && (
             <IconButton
               component={LinkBehavior}
               href={`/drivers/${row.id}`}

@@ -123,6 +123,27 @@ export async function listServiceProceduresForVehicle(
     });
     const last = records[0] ?? null;
 
+    // Insurance uses explicit start/end dates — bypass the period+records logic.
+    if (p.type === "insurance") {
+      const remainingDays = p.insurance_end_date
+        ? daysBetween(today, p.insurance_end_date)
+        : null;
+      let status: ServiceProcedureStatus;
+      if (remainingDays == null) status = "unknown";
+      else if (remainingDays <= 0) status = "overdue";
+      else if (remainingDays <= 7) status = "due_soon";
+      else status = "ok";
+      return {
+        ...p,
+        last_completed_at: p.insurance_start_date ?? null,
+        last_odometer: null,
+        records_count: records.length,
+        remaining_km: null,
+        remaining_days: remainingDays,
+        status,
+      };
+    }
+
     const remainingKm =
       p.period_km != null && last?.odometer != null
         ? last.odometer + p.period_km - currentOdometer
