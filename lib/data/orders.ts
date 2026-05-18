@@ -1,10 +1,10 @@
 import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
-import type { Enums, Tables, Views } from "@/lib/supabase/types";
+import type { Enums, Tables } from "@/lib/supabase/types";
 
 export type OrderRow = Tables<"orders">;
-export type OrderWithMetrics = Views<"orders_with_metrics">;
+export type OrderWithMetrics = Tables<"orders_with_metrics">;
 export type OrderStatus = Enums<"order_status">;
 
 export async function listOrders(opts?: {

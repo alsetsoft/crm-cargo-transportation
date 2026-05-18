@@ -1,10 +1,10 @@
 import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
-import type { Tables, Views } from "@/lib/supabase/types";
+import type { Tables } from "@/lib/supabase/types";
 
 export type DriverRow = Tables<"drivers">;
-export type DriverWithStats = Views<"drivers_with_stats">;
+export type DriverWithStats = Tables<"drivers_with_stats">;
 
 export async function listDrivers(): Promise<DriverWithStats[]> {
   const supabase = await createClient();

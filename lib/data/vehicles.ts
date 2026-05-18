@@ -1,10 +1,10 @@
 import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
-import type { Tables, Views } from "@/lib/supabase/types";
+import type { Tables } from "@/lib/supabase/types";
 
 export type VehicleRow = Tables<"vehicles">;
-export type VehicleWithStats = Views<"vehicles_with_stats">;
+export type VehicleWithStats = Tables<"vehicles_with_stats">;
 
 export async function listVehicles(): Promise<VehicleWithStats[]> {
   const supabase = await createClient();
