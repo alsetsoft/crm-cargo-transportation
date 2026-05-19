@@ -142,13 +142,13 @@ export function ServiceBookTable({
                   py: 1.5,
                   borderBottom: 1,
                   borderColor: "divider",
-                  verticalAlign: "top",
-                  // Actions cell is the last column — keep its buttons
-                  // vertically centered against the multi-line row content
-                  // (matching the alignment style used elsewhere in the app).
+                  // Match the implicit `<th>` vertical-align of `middle` so
+                  // headers and their content share the same baseline — when
+                  // the Procedure column expands to multiple lines, status
+                  // chip + actions don't visually drift apart.
+                  verticalAlign: "middle",
                   "&:last-child": {
                     textAlign: "right",
-                    verticalAlign: "middle",
                   },
                 },
                 "& tr:last-child td": {

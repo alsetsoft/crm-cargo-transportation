@@ -16,16 +16,24 @@ export async function listClients(): Promise<ClientWithStats[]> {
   return data ?? [];
 }
 
-export async function listActiveClients(): Promise<
-  Pick<ClientRow, "id" | "name" | "code">[]
-> {
+export type ClientSelectOption = Pick<
+  ClientRow,
+  "id" | "name" | "code" | "contact_person"
+>;
+
+export async function listActiveClients(): Promise<ClientSelectOption[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("clients")
-    .select("id, name, code")
-    .order("name");
+    .select("id, name, code, contact_person");
   if (error) throw error;
-  return data ?? [];
+  // Sort on the JS side with Ukrainian collation — Postgres' default
+  // collation puts Cyrillic letters in an order that doesn't match the
+  // Ukrainian alphabet (the bug report: "CL-006 first, then CL-004 …").
+  // `localeCompare` with the "uk" locale gives the user-expected А–Я order.
+  return (data ?? []).slice().sort((a, b) =>
+    a.name.localeCompare(b.name, "uk", { sensitivity: "base" }),
+  );
 }
 
 export async function getClient(id: string): Promise<ClientRow | null> {

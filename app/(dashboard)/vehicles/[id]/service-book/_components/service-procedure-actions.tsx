@@ -97,6 +97,7 @@ export function ServiceProcedureActions({
         action={deleteServiceProcedureAction}
         id={procedureId}
         triggerVariant="ghost"
+        size="small"
       />
     </Stack>
   );

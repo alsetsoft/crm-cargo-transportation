@@ -14,6 +14,12 @@ type ConfirmDeleteDialogProps = {
   id: string;
   triggerLabel?: string;
   triggerVariant?: "destructive" | "ghost" | "outline";
+  // When the dialog's IconButton trigger sits next to a `Button size="small"`
+  // (e.g. in the service-procedures actions cell), pass `size="small"` so
+  // both controls share the same height and stay on a common centre line.
+  // Defaults to medium for the DataGrid action cells used throughout the
+  // rest of the app — touch targets there must stay ≥ 40px.
+  size?: "small" | "medium";
 };
 
 // Map the legacy shadcn triggerVariant to MUI Button variant
@@ -35,6 +41,7 @@ export function ConfirmDeleteDialog({
   id,
   triggerLabel,
   triggerVariant = "ghost",
+  size = "medium",
 }: ConfirmDeleteDialogProps) {
   const [isPending, startTransition] = useTransition();
 
@@ -70,9 +77,10 @@ export function ConfirmDeleteDialog({
       color="error"
       onClick={handleClick}
       disabled={isPending}
-      sx={{ p: 1.5 }}
+      size={size}
+      sx={size === "medium" ? { p: 1.5 } : undefined}
     >
-      <Trash2 size={18} />
+      <Trash2 size={size === "small" ? 16 : 18} />
     </IconButton>
   );
 }

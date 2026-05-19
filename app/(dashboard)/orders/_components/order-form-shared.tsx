@@ -28,7 +28,12 @@ import {
   type OrderInput,
 } from "@/lib/validation/order";
 
-export type ClientOption = { id: string; name: string; code: string };
+export type ClientOption = {
+  id: string;
+  name: string;
+  code: string;
+  contact_person: string | null;
+};
 export type DriverOption = {
   id: string;
   full_name: string;
@@ -207,6 +212,23 @@ export function OrderFormBody({
 }: OrderFormBodyProps) {
   const { control } = form;
 
+  // Collect names that appear more than once so we can surface an
+  // extra disambiguator (contact_person) ONLY for those rows. Names
+  // are compared case-insensitively after trim to catch "ТОВ Х" vs
+  // "тов х" duplicates.
+  const duplicateNames = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const c of clients) {
+      const key = c.name.trim().toLocaleLowerCase("uk");
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+    }
+    return new Set(
+      Array.from(counts.entries())
+        .filter(([, n]) => n > 1)
+        .map(([k]) => k),
+    );
+  }, [clients]);
+
   return (
     <Box
       sx={{
@@ -261,11 +283,21 @@ export function OrderFormBody({
                     sx={{ flexGrow: 1 }}
                     SelectProps={{ MenuProps: { disableScrollLock: true } }}
                   >
-                    {clients.map((c) => (
-                      <MenuItem key={c.id} value={c.id}>
-                        {c.code} · {c.name}
-                      </MenuItem>
-                    ))}
+                    {clients.map((c) => {
+                      const isDuplicate = duplicateNames.has(
+                        c.name.trim().toLocaleLowerCase("uk"),
+                      );
+                      const disambiguator =
+                        isDuplicate && c.contact_person?.trim()
+                          ? ` — ${c.contact_person.trim()}`
+                          : "";
+                      return (
+                        <MenuItem key={c.id} value={c.id}>
+                          {c.code} · {c.name}
+                          {disambiguator}
+                        </MenuItem>
+                      );
+                    })}
                   </TextField>
                 )}
               />
