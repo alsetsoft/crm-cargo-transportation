@@ -20,6 +20,13 @@ Two env vars are required at runtime — both are read directly from `process.en
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 
+Optional integration env vars (server-only — never `NEXT_PUBLIC_*`):
+
+- `DOZOR_API_BASE_URL` — base URL of the DozoR Web-API (typically the same host as the DozoR admin UI the customer logs into). Issued together with the API key by the GPS operator.
+- `DOZOR_API_KEY` — 32-char user key from the DozoR admin panel.
+
+When either DozoR var is unset, [/gps](app/(dashboard)/gps/page.tsx) still renders (vehicles list comes from Postgres) but shows an "інтеграція не налаштована" banner and the tracker selector in the vehicle edit form degrades to a free-text UID field. The DozoR client at [lib/dozor/client.ts](lib/dozor/client.ts) **only ever issues GET requests** — `/sync/*/set` and `/sync/*/del` endpoints are intentionally out of reach.
+
 A Supabase MCP server is wired up in [.mcp.json](.mcp.json) (project ref `qvcboxeklonmqxoqxuhw`) — use it to inspect schema/data rather than guessing.
 
 ## Architecture

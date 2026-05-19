@@ -14,6 +14,7 @@ function buildPayload(input: VehicleInput) {
     unit: input.unit,
     plate: input.plate,
     current_driver_id: input.current_driver_id ?? null,
+    dozor_device_uid: input.dozor_device_uid ?? null,
     fuel_norm_l_100km: input.fuel_norm_l_100km ?? null,
     status: input.status,
     service_next_date: input.service_next_date ?? null,
@@ -50,6 +51,7 @@ export async function createVehicleAction(input: VehicleInput): Promise<ActionRe
   revalidatePath("/vehicles");
   revalidatePath("/drivers");
   revalidatePath("/orders");
+  revalidatePath("/gps");
   revalidatePath("/");
   return { ok: true };
 }
@@ -80,6 +82,7 @@ export async function updateVehicleAction(
   revalidatePath("/vehicles");
   revalidatePath("/drivers");
   revalidatePath("/orders");
+  revalidatePath("/gps");
   return { ok: true };
 }
 
@@ -105,5 +108,6 @@ export async function deleteVehicleAction(id: string): Promise<ActionResult> {
 
   revalidatePath("/vehicles");
   revalidatePath("/drivers");
+  revalidatePath("/gps");
   return { ok: true };
 }

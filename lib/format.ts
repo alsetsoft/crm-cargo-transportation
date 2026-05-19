@@ -42,6 +42,19 @@ export function formatPercent(value: number | null | undefined): string {
   return `${formatNumber(value, 1)}%`;
 }
 
+export function formatSpeed(value: number | null | undefined): string {
+  if (value == null) return "—";
+  return `${formatNumber(value)} км/год`;
+}
+
+export function formatCoords(
+  lat: number | null | undefined,
+  lng: number | null | undefined,
+): string {
+  if (lat == null || lng == null) return "—";
+  return `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+}
+
 export function formatDate(value: string | Date | null | undefined): string {
   if (!value) return "—";
   const date = typeof value === "string" ? new Date(value) : value;

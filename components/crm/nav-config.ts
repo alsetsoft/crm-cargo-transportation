@@ -4,6 +4,7 @@ import {
   History,
   LayoutDashboard,
   type LucideIcon,
+  MapPin,
   Truck,
   UserRound,
   Wallet,
@@ -48,6 +49,12 @@ export const navigationItems: NavItem[] = [
     href: "/vehicles",
     icon: Truck,
     description: "Рухомий склад",
+  },
+  {
+    title: "GPS трекінг",
+    href: "/gps",
+    icon: MapPin,
+    description: "Онлайн-моніторинг автопарку",
   },
   {
     title: "Витрати",

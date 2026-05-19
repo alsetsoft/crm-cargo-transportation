@@ -85,6 +85,29 @@ export const VEHICLE_DOCUMENT_TYPE_LABELS: Record<VehicleDocumentType, string> =
   tachograph: "ТАХО",
 };
 
+// GPS status is a runtime-derived value (not a Postgres enum), computed in
+// lib/data/gps.ts from DozoR location + tracker connection data.
+export type GpsStatus = "moving" | "parked" | "waiting" | "unlinked";
+
+export const GPS_STATUS_LABELS: Record<GpsStatus, string> = {
+  moving: "В русі",
+  parked: "Стоянка",
+  waiting: "Очікування",
+  unlinked: "Без трекера",
+};
+
+export const GPS_STATUS_TONES: Record<GpsStatus, BadgeTone> = {
+  moving: "info",
+  parked: "success",
+  waiting: "warning",
+  unlinked: "secondary",
+};
+
+// Threshold below which the tracker is considered "parked" rather than "moving".
+export const GPS_MOVING_SPEED_KMH = 5;
+// After this much wall-clock silence we assume the tracker is not reporting.
+export const GPS_STALE_MS = 10 * 60 * 1000;
+
 // ---------------------------------------------------------------------------
 // MUI color mapping — single source of truth used by StatusBadge and KpiCard
 // ---------------------------------------------------------------------------

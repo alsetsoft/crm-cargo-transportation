@@ -426,6 +426,7 @@ export type Database = {
         Row: {
           created_at: string
           current_driver_id: string | null
+          dozor_device_uid: string | null
           fuel_norm_l_100km: number | null
           id: string
           notes: string | null
@@ -439,6 +440,7 @@ export type Database = {
         Insert: {
           created_at?: string
           current_driver_id?: string | null
+          dozor_device_uid?: string | null
           fuel_norm_l_100km?: number | null
           id?: string
           notes?: string | null
@@ -452,6 +454,7 @@ export type Database = {
         Update: {
           created_at?: string
           current_driver_id?: string | null
+          dozor_device_uid?: string | null
           fuel_norm_l_100km?: number | null
           id?: string
           notes?: string | null
@@ -619,6 +622,7 @@ export type Database = {
         Row: {
           created_at: string | null
           current_driver_id: string | null
+          dozor_device_uid: string | null
           driver_full_name: string | null
           fuel_norm_l_100km: number | null
           id: string | null

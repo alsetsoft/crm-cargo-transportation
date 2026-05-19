@@ -26,10 +26,20 @@ const optionalDate = z
 
 export const vehicleStatusEnum = z.enum(["on_trip", "service", "available"]);
 
+const optionalDozorUid = z
+  .string()
+  .trim()
+  .max(64)
+  .regex(/^[A-Za-z0-9_-]+$/, "Невірний UID трекера")
+  .optional()
+  .or(z.literal("").transform(() => undefined))
+  .or(z.literal("none").transform(() => undefined));
+
 export const vehicleInputSchema = z.object({
   unit: z.string().trim().min(1, "Введіть марку/модель").max(120),
   plate: z.string().trim().min(2, "Введіть держномер").max(20),
   current_driver_id: optionalUuid,
+  dozor_device_uid: optionalDozorUid,
   fuel_norm_l_100km: optionalNumber,
   status: vehicleStatusEnum.default("available"),
   service_next_date: optionalDate,

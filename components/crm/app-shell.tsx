@@ -15,7 +15,7 @@ import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import MenuIcon from "@mui/icons-material/Menu";
-import { Lock, MapPin, Settings } from "lucide-react";
+import { Lock, Settings } from "lucide-react";
 import NextLink from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -30,7 +30,6 @@ export const DRAWER_WIDTH = 280;
 // "Coming soon" items rendered in a disabled SKORO section. Not in
 // nav-config because they have no route and are decorative only.
 const COMING_SOON_ITEMS = [
-  { title: "GPS трекінг", stage: "Етап 2", icon: MapPin },
   { title: "Налаштування", stage: "Етап 3", icon: Settings },
 ] as const;
 

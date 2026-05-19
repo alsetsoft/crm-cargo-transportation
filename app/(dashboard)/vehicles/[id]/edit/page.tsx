@@ -4,6 +4,7 @@ import Stack from "@mui/material/Stack";
 
 import { PageHeader } from "@/components/crm/page-header";
 import { listDriversForSelect } from "@/lib/data/drivers";
+import { listTrackerOptions } from "@/lib/data/gps";
 import { getVehicle } from "@/lib/data/vehicles";
 
 import { VehicleFormPage } from "../../_components/vehicle-form-page";
@@ -14,9 +15,10 @@ type PageProps = { params: Promise<{ id: string }> };
 
 export default async function EditVehiclePage({ params }: PageProps) {
   const { id } = await params;
-  const [vehicle, driverOptions] = await Promise.all([
+  const [vehicle, driverOptions, trackerOptions] = await Promise.all([
     getVehicle(id),
     listDriversForSelect(),
+    listTrackerOptions(),
   ]);
 
   if (!vehicle) {
@@ -34,6 +36,7 @@ export default async function EditVehiclePage({ params }: PageProps) {
         mode="edit"
         vehicle={vehicle}
         driverOptions={driverOptions}
+        trackerOptions={trackerOptions}
       />
     </Stack>
   );
